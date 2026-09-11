@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Domingo Kids | Administração</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="description" content="Administração do Domingo Kids. Igreja Videira de Jataí.">
+
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="shortcut icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Domingo Kids">
+    <meta name="apple-mobile-web-app-title" content="Domingo Kids">
+    <meta name="theme-color" content="#8b5a6a">
+    <link rel="manifest" href="manifest.json">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Domingo Kids">
+    <meta property="og:title" content="Domingo Kids | Administração">
+    <meta property="og:description" content="Administração do Domingo Kids. Igreja Videira de Jataí.">
+    <meta property="og:url" content="https://videirajatai.com.br/domingokids/admin.html">
+    <meta property="og:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Domingo Kids | Administração">
+    <meta name="twitter:description" content="Administração do Domingo Kids. Igreja Videira de Jataí.">
+    <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+
+    <script src="config.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/push.js"></script>
+    <style>
+        :root {
+            --primary: #8b5a6a;
+            --primary-hover: #7a4d5a;
+            --bg-color: #fcf7f5;
+            --text-main: #4a3b3e;
+            --text-light: #7a6a6e;
+            --input-bg: #fdfaf9;
+            --border-color: #e6dcd8;
+            --success-text: #2d6a4f;
+            --danger-text: #b34a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1rem 0 3rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem 1.2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .topbar h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background: #f3e7e2;
+        }
+
+        .btn-danger {
+            background: var(--danger-text);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #963d3d;
+        }
+
+        .btn-success {
+            background: var(--success-text);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #235640;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: #f3e7e2;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Tabela */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 0.6rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9f5f3;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        .badge-role {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: var(--input-bg);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .badge-role.parent { background: #eaf6ed; color: #2d6a4f; border-color: #b8d9c0; }
+        .badge-role.staff { background: #e0e7ff; color: #1e40af; border-color: #b8c9f0; }
+        .badge-role.both { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+        .badge-role.admin { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            max-width: 400px;
+            width: 90%;
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .modal-box p {
+            color: var(--text-light);
+            margin: 0.5rem 0 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .modal-box label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+            color: var(--text-light);
+        }
+
+        .modal-box select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            background: var(--input-bg);
+            margin-bottom: 1rem;
+        }
+
+        .modal-box .btn-group {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .modal-box .btn-group button {
+            flex: 1;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: var(--text-main);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success { background: var(--success-text); }
+        .toast-error { background: var(--danger-text); }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-light);
+        }
+
+        .empty-state i { font-size: 2rem; opacity: 0.5; }
+
+        .search-box {
+            width: 100%;
+            max-width: 280px;
+            padding: 0.55rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--input-bg);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            outline: none;
+        }
+        .search-box:focus { border-color: var(--primary); background: #fff; }
+
+        .modal-box input[type="password"],
+        .modal-box input[type="text"] {
+            width: 100%;
+            padding: 0.7rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            background: var(--input-bg);
+            margin-bottom: 1rem;
+            outline: none;
+        }
+
+        .btn-acoes {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .btn-acoes .btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+        }
+
+        .lista-mobile { display: none; }
+
+        .user-card {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.9rem;
+            margin-bottom: 0.7rem;
+            background: var(--input-bg);
+        }
+        .user-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 0.45rem;
+        }
+        .user-card-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        .user-card-meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.15rem;
+            word-break: break-word;
+        }
+        .user-card .btn-acoes {
+            margin-top: 0.7rem;
+        }
+        .user-card .btn-acoes .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 0.65rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* Responsivo */
+        @media (max-width: 640px) {
+            body { padding: 0.6rem 0 5rem; }
+            .container { padding: 0 0.7rem; }
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: left;
+                padding: 0.9rem 1rem;
+            }
+            .topbar h1 { font-size: 1.15rem; }
+            .topbar-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            .topbar-actions .btn {
+                justify-content: center;
+                width: 100%;
+                min-height: 44px;
+            }
+            .card { padding: 0.9rem; }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box { max-width: 100%; min-height: 44px; font-size: 1rem; }
+            .table-wrapper { display: none; }
+            .lista-mobile { display: block; }
+            .modal-box {
+                padding: 1.2rem;
+                width: 94%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .modal-box .btn-group {
+                flex-direction: column;
+            }
+            .modal-box .btn-group button {
+                width: 100%;
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div>
+                <h1>👑 Administração</h1>
+                <span style="font-size:0.8rem; color:var(--text-light);">Gerenciar usuários e permissões</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-secondary" onclick="carregarUsuarios()">🔄 Recarregar</button>
+                <button class="btn btn-outline" onclick="logout()">🏠 Sair</button>
+            </div>
+        </div>
+
+        <!-- Card principal -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Usuários cadastrados</h2>
+                <span id="contadorUsuarios" style="font-size:0.9rem; background:var(--input-bg); padding:0.2rem 0.8rem; border-radius:20px; border:1px solid var(--border-color);">0</span>
+                <input type="search" id="buscaUsuarios" class="search-box" placeholder="Buscar usuário, e-mail ou nome" oninput="filtrarUsuarios()">
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Nome</th>
+                            <th>Papel</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaUsuarios">
+                        <tr><td colspan="5" style="text-align:center; color:var(--text-light);">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="listaUsuariosMobile" class="lista-mobile"></div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Role -->
+    <div id="modal-editar-role" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Editar papel</h3>
+            <p id="modal-usuario-info">Usuário: <strong>carregando...</strong></p>
+            <label for="select-role">Novo papel:</label>
+            <select id="select-role">
+                <option value="parent">Pai (parent)</option>
+                <option value="staff">Equipe (staff)</option>
+                <option value="both">Ambos (both)</option>
+                <option value="admin">Administrador (admin)</option>
+            </select>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="salvarEdicaoRole()">Salvar</button>
+                <button class="btn btn-secondary" onclick="fecharModalEdicao()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-excluir-usuario" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Excluir usuário</h3>
+            <p id="modal-excluir-info">Confirme a exclusão.</p>
+            <label for="senha-excluir">Senha de exclusão</label>
+            <input type="password" id="senha-excluir" placeholder="Digite a senha" autocomplete="off">
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmarExclusaoUsuario()">Excluir</button>
+                <button class="btn btn-secondary" onclick="fecharModalExclusao()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ==================== CONFIGURAÇÃO ====================
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        const SENHA_EXCLUSAO = 'admin1425';
+        let usuarioEditando = null;
+        let usuarioExcluindo = null;
+        let listaUsuarios = [];
+
+        // ==================== TOAST ====================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.className = 'toast';
+            if (type === 'success') toast.classList.add('toast-success');
+            else if (type === 'error') toast.classList.add('toast-error');
+            toast.textContent = message;
+            toast.offsetHeight;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== VERIFICAR ACESSO ====================
+        async function verificarAcesso() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = 'index.html?t=' + Date.now();
+                return false;
+            }
+
+            const { data: profile, error } = await supabaseClient
+                .from('kids_profiles')
+                .select('role')
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (error || !profile || profile.role !== 'admin') {
+                showToast('Acesso negado. Você não é administrador.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html?t=' + Date.now();
+                }, 1500);
+                return false;
+            }
+
+            return true;
+        }
+
+        // ==================== CARREGAR USUÁRIOS ====================
+        async function carregarUsuarios() {
+            const tbody = document.getElementById('tabelaUsuarios');
+            const listaMobile = document.getElementById('listaUsuariosMobile');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light);">Carregando...</td></tr>';
+            listaMobile.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+            const { data: usuarios, error } = await supabaseClient
+                .from('kids_profiles')
+                .select('id, username, email, full_name, role')
+                .order('username', { ascending: true });
+
+            if (error) {
+                console.error('Erro ao carregar usuários:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger-text);">Erro ao carregar dados.</td></tr>';
+                listaMobile.innerHTML = '<div class="empty-state">Erro ao carregar dados.</div>';
+                return;
+            }
+
+            listaUsuarios = usuarios || [];
+            document.getElementById('contadorUsuarios').textContent = listaUsuarios.length;
+            renderizarUsuarios(listaUsuarios);
+        }
+
+        function filtrarUsuarios() {
+            const termo = (document.getElementById('buscaUsuarios').value || '').trim().toLowerCase();
+            if (!termo) {
+                renderizarUsuarios(listaUsuarios);
+                return;
+            }
+            const filtrados = listaUsuarios.filter(user => {
+                const texto = [user.username, user.email, user.full_name, user.role].join(' ').toLowerCase();
+                return texto.includes(termo);
+            });
+            renderizarUsuarios(filtrados);
+        }
+
+        function botoesAcoes(userId) {
+            return `
+                <div class="btn-acoes">
+                    <button class="btn btn-secondary" onclick="abrirModalEdicao('${userId}')">Editar</button>
+                    <button class="btn btn-danger" onclick="abrirModalExclusao('${userId}')">Excluir</button>
+                </div>
+            `;
+        }
+
+        function renderizarUsuarios(usuarios) {
+            const tbody = document.getElementById('tabelaUsuarios');
+            const listaMobile = document.getElementById('listaUsuariosMobile');
+
+            if (!usuarios || usuarios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-light);">Nenhum usuário encontrado.</td></tr>';
+                listaMobile.innerHTML = '<div class="empty-state">Nenhum usuário encontrado.</div>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            listaMobile.innerHTML = '';
+
+            usuarios.forEach(user => {
+                const roleClass = user.role || 'parent';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${escapeHtml(user.username || '—')}</strong></td>
+                    <td>${escapeHtml(user.email || '—')}</td>
+                    <td>${escapeHtml(user.full_name || '—')}</td>
+                    <td><span class="badge-role ${roleClass}">${roleClass}</span></td>
+                    <td>${botoesAcoes(user.id)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.innerHTML = `
+                    <div class="user-card-top">
+                        <div>
+                            <div class="user-card-name">${escapeHtml(user.username || user.email || '—')}</div>
+                            <div class="user-card-meta">${escapeHtml(user.email || '—')}</div>
+                            <div class="user-card-meta">${escapeHtml(user.full_name || '—')}</div>
+                        </div>
+                        <span class="badge-role ${roleClass}">${roleClass}</span>
+                    </div>
+                    ${botoesAcoes(user.id)}
+                `;
+                listaMobile.appendChild(card);
+            });
+        }
+
+        // ==================== ABRIR MODAL EDIÇÃO ====================
+        async function abrirModalEdicao(userId) {
+            const { data: user, error } = await supabaseClient
+                .from('kids_profiles')
+                .select('id, username, email, full_name, role')
+                .eq('id', userId)
+                .single();
+
+            if (error || !user) {
+                showToast('Erro ao carregar dados do usuário.', 'error');
+                return;
+            }
+
+            usuarioEditando = user;
+            document.getElementById('modal-usuario-info').innerHTML = `Usuário: <strong>${escapeHtml(user.username || user.email)}</strong>`;
+            document.getElementById('select-role').value = user.role || 'parent';
+            document.getElementById('modal-editar-role').classList.add('active');
+        }
+
+        function fecharModalEdicao() {
+            document.getElementById('modal-editar-role').classList.remove('active');
+            usuarioEditando = null;
+        }
+
+        // ==================== SALVAR EDIÇÃO ====================
+        async function salvarEdicaoRole() {
+            if (!usuarioEditando) return;
+
+            const novoRole = document.getElementById('select-role').value;
+            const userId = usuarioEditando.id;
+
+            const { error } = await supabaseClient
+                .from('kids_profiles')
+                .update({ role: novoRole })
+                .eq('id', userId);
+
+            if (error) {
+                showToast('Erro ao atualizar: ' + error.message, 'error');
+                return;
+            }
+
+            showToast('Papel atualizado com sucesso!', 'success');
+            fecharModalEdicao();
+            carregarUsuarios();
+        }
+
+        function abrirModalExclusao(userId) {
+            const user = listaUsuarios.find(u => u.id === userId);
+            if (!user) {
+                showToast('Usuário não encontrado.', 'error');
+                return;
+            }
+            usuarioExcluindo = user;
+            document.getElementById('modal-excluir-info').innerHTML =
+                `Excluir <strong>${escapeHtml(user.username || user.email)}</strong>? Esta ação não pode ser desfeita.`;
+            document.getElementById('senha-excluir').value = '';
+            document.getElementById('modal-excluir-usuario').classList.add('active');
+            setTimeout(() => document.getElementById('senha-excluir').focus(), 50);
+        }
+
+        function fecharModalExclusao() {
+            document.getElementById('modal-excluir-usuario').classList.remove('active');
+            usuarioExcluindo = null;
+            document.getElementById('senha-excluir').value = '';
+        }
+
+        async function confirmarExclusaoUsuario() {
+            if (!usuarioExcluindo) return;
+
+            const senha = document.getElementById('senha-excluir').value.trim();
+            if (senha !== SENHA_EXCLUSAO) {
+                showToast('Senha de exclusão incorreta.', 'error');
+                return;
+            }
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user && user.id === usuarioExcluindo.id) {
+                showToast('Você não pode excluir o próprio usuário.', 'error');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('kids_profiles')
+                .delete()
+                .eq('id', usuarioExcluindo.id);
+
+            if (error) {
+                showToast('Erro ao excluir: ' + error.message, 'error');
+                return;
+            }
+
+            showToast('Usuário excluído.', 'success');
+            fecharModalExclusao();
+            carregarUsuarios();
+        }
+
+        // ==================== UTILITÁRIOS ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ==================== INICIALIZAÇÃO ====================
+        (async function init() {
+            const acesso = await verificarAcesso();
+            if (acesso) {
+                registrarPush();
+                carregarUsuarios();
+            }
+        })();
+
+        async function logout() {
+            window.location.href = 'index.html?t=' + Date.now();
+        }
+    </script>
+
+</body>
+</html>

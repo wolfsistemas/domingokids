@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Domingo Kids | Equipe</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+
+     <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="shortcut icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Domingo Kids">
+    <meta name="apple-mobile-web-app-title" content="Domingo Kids">
+    <meta name="theme-color" content="#8b5a6a">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="Painel da equipe do Domingo Kids. Check-in e check-out das crianças.">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Domingo Kids">
+    <meta property="og:title" content="Domingo Kids | Equipe">
+    <meta property="og:description" content="Painel da equipe do Domingo Kids. Check-in e check-out das crianças.">
+    <meta property="og:url" content="https://videirajatai.com.br/domingokids/equipe.html">
+    <meta property="og:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Domingo Kids | Equipe">
+    <meta name="twitter:description" content="Painel da equipe do Domingo Kids. Check-in e check-out das crianças.">
+    <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+
+    
+    <script src="config.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/push.js"></script>
+
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5a6a;
+            --primary-dark: #6d4351;
+            --primary-light: #c9a7b3;
+            --accent: #d4a373;
+            --accent-dark: #b9824f;
+            --bg-body: #faf5f2;
+            --surface: #ffffff;
+            --text-main: #3d2f32;
+            --text-light: #8a7a7e;
+            --text-faint: #b3a29f;
+            --border-color: #ece2de;
+            --input-bg: #fbf7f5;
+            --success: #2d6a4f;
+            --success-bg: #eaf6ed;
+            --danger: #b34a4a;
+            --danger-bg: #fbebeb;
+            --room-kids: #3d7a8c;
+            --room-babys: #c98a3e;
+            --room-juvenis: #7a5ca3;
+            --room-todos: #2d6a4f;
+            --radius-sm: 0.7rem;
+            --radius-md: 1.1rem;
+            --radius-lg: 1.6rem;
+            --radius-xl: 2rem;
+            --shadow-sm: 0 2px 8px rgba(61, 47, 50, 0.05);
+            --shadow-md: 0 8px 24px rgba(61, 47, 50, 0.08);
+            --shadow-lg: 0 16px 40px rgba(61, 47, 50, 0.14);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-body);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 6rem;
+        }
+
+       /* ===== TOPBAR ===== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: linear-gradient(120deg, #6d4351 0%, #8b5a6a 55%, #96637a 100%);
+            color: white;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-lg);
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+        }
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0; /* permite encolher */
+            flex-shrink: 1;
+        }
+        .topbar-logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: rgba(255,255,255,0.2);
+            padding: 2px;
+            flex-shrink: 0;
+        }
+        .topbar-brand h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+        .topbar-brand span {
+            font-size: 0.65rem;
+            opacity: 0.85;
+            font-weight: 500;
+            display: block;
+            white-space: nowrap;
+        }
+        .topbar-actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 0.7rem;
+            background: rgba(255,255,255,0.14);
+            border: none;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        /* ===== LAYOUT ===== */
+        .page {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 1.2rem 1.1rem 0;
+        }
+
+        /* ===== SESSION STRIP ===== */
+        .session-strip {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            padding: 0.9rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1.1rem;
+        }
+        .session-strip-icon {
+            width: 38px; height: 38px;
+            border-radius: 0.8rem;
+            background: var(--success-bg);
+            color: var(--success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .session-strip-field { flex: 1; min-width: 0; }
+        .session-strip-field label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-light);
+            margin-bottom: 0.15rem;
+        }
+        .session-strip select {
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+            width: 100%;
+            cursor: pointer;
+        }
+        .session-strip select:focus { outline: none; }
+        .btn-ghost {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+            padding: 0.55rem 0.9rem;
+            border-radius: 0.9rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 0.35rem;
+            transition: 0.2s;
+        }
+        .btn-ghost:hover { background: #f3e7e2; }
+
+        /* ===== SCANNER HERO ===== */
+        .scanner-hero {
+            background: linear-gradient(160deg, #ffffff 0%, #fdf7f4 100%);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .scanner-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, rgba(212,163,115,0.18), transparent 70%);
+            border-radius: 50%;
+        }
+        .scanner-hero-head {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 1.1rem;
+            position: relative;
+        }
+        .scanner-hero-icon {
+            width: 44px; height: 44px;
+            border-radius: 1rem;
+            background: var(--primary);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .btn-visitante-discreto:hover {
+            background: var(--input-bg);
+        }
+        .scanner-hero-head h2 { font-size: 1.05rem; font-weight: 700; }
+        .scanner-hero-head p { font-size: 0.78rem; color: var(--text-light); margin-top: 0.1rem; }
+
+        .scanner-area { text-align: center; position: relative; }
+        #reader {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .scanner-buttons {
+            display: flex;
+            gap: 0.7rem;
+            justify-content: center;
+            margin-top: 1.1rem;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 6px 16px rgba(139,90,106,0.28);
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.7rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-secondary:hover { background: #f3e7e2; }
+        .btn-danger { background: var(--danger); color: white; border: none; }
+        .btn-danger:hover { background: #963d3d; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #235640; }
+
+        #cameraSelect {
+            margin: 0.9rem auto 0;
+            display: block;
+            max-width: 320px;
+            padding: 0.55rem 0.9rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            font-size: 0.82rem;
+        }
+        .scan-result {
+            margin-top: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-align: center;
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        /* ===== TABS (segmented) ===== */
+        .present-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            padding: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.35rem;
+            margin-bottom: 1.2rem;
+            background: var(--input-bg);
+            padding: 0.3rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.55rem 0.4rem;
+            border-radius: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139,90,106,0.3);
+        }
+        .tab:hover:not(.active) { background: #f3e7e2; color: var(--text-main); }
+
+        /* ===== LISTA DE PRESENTES ===== */
+        .present-item {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            transition: 0.2s;
+            border-left: 4px solid var(--success);
+        }
+        .present-item:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+        .visitant-item { border-left-color: var(--accent); background: #fdf6ec; }
+        .present-info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .present-name { font-weight: 700; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .present-time { font-size: 0.72rem; color: var(--text-light); font-weight: 500; }
+        .present-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .btn-icon {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--text-main);
+        }
+        .btn-icon:hover { background: #f3e7e2; transform: scale(1.03); }
+        .btn-icon.btn-danger { background: var(--danger-bg); border-color: #edd3d3; color: var(--danger); }
+        .btn-icon.btn-danger:hover { background: #f7dcdc; }
+
+        /* ===== FAB ===== */
+        .fab-visitante {
+            position: fixed;
+            bottom: 1.6rem;
+            right: 1.6rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            width: 58px;
+            height: 58px;
+            border-radius: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 10px 24px rgba(212,163,115,0.45);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        .fab-visitante:hover { transform: scale(1.06) rotate(-4deg); box-shadow: 0 14px 30px rgba(212,163,115,0.55); }
+
+        /* ===== MODAIS (bottom sheet) ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(61,47,50,0.45);
+            backdrop-filter: blur(4px);
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal-content {
+            background: var(--surface);
+            width: 100%;
+            max-width: 550px;
+            border-radius: 1.8rem 1.8rem 0 0;
+            padding: 1.6rem 1.5rem 2rem;
+            max-height: 88vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @media (min-width: 620px) {
+            .modal { align-items: center; }
+            .modal-content { border-radius: var(--radius-xl); }
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-content::before {
+            content: '';
+            display: block;
+            width: 40px; height: 4px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin: -0.4rem auto 1rem;
+        }
+        @media (min-width: 620px) {
+            .modal-content::before { display: none; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1.1rem;
+            right: 1.2rem;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-faint);
+            transition: 0.2s;
+            background: var(--input-bg);
+            border: none;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text-main); background: #f0e6e2; }
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.1rem;
+            color: var(--text-main);
+            padding-right: 2rem;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem 0.9rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            margin: 0.35rem 0 1rem;
+            font-size: 0.9rem;
+            background: var(--input-bg);
+            font-family: 'Inter', sans-serif;
+            transition: 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139,90,106,0.12);
+            background: white;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 1.6rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: var(--text-main);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius-xl);
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-info { background: var(--primary); }
+
+        /* ===== ROOM LIST (modal mover de sala) ===== */
+        .room-list { max-height: 400px; overflow-y: auto; }
+        .room-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.7rem 0.2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .room-item:last-child { border-bottom: none; }
+        .room-item img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+
+        /* ===== BADGE ===== */
+        .badge {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-xl);
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        /* ===== RELATÓRIO (PDF) ===== */
+        .report-container { font-family: 'Inter', sans-serif; color: #3d2f32; padding: 0.5rem; }
+        .report-header { text-align: center; margin-bottom: 1.2rem; }
+        .report-header img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 0.4rem; }
+        .report-title { font-size: 1.3rem; font-weight: 800; color: #8b5a6a; }
+        .report-subtitle { font-size: 0.9rem; color: #8a7a7e; margin-top: 0.2rem; }
+        .stats-grid { display: flex; gap: 0.7rem; margin-bottom: 1.2rem; }
+        .stat-card {
+            flex: 1;
+            background: #faf5f2;
+            border: 1px solid #ece2de;
+            border-radius: 0.9rem;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .stat-number { font-size: 1.4rem; font-weight: 800; color: #8b5a6a; }
+        .stat-label { font-size: 0.68rem; color: #8a7a7e; font-weight: 600; margin-top: 0.15rem; }
+        .report-container table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        .report-container th {
+            background: #8b5a6a; color: white; padding: 0.5rem 0.6rem;
+            font-size: 0.75rem; text-align: left; font-weight: 600;
+        }
+        .report-container td {
+            padding: 0.45rem 0.6rem; font-size: 0.78rem;
+            border-bottom: 1px solid #ece2de;
+        }
+        .report-container tr.birthday { background: #fdf6ec; }
+        .report-container h3 { margin-top: 1.2rem; margin-bottom: 0.5rem; font-size: 1rem; color: #3d2f32; }
+
+        /* ===== MODAL RELATÓRIOS ===== */
+        .tab-relatorio {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .tab-relatorio.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .tab-relatorio:hover {
+            color: var(--text-main);
+        }
+        .aba-relatorio {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* Estilos para o PDF (serão aplicados na impressão) */
+        .report-pdf {
+            font-family: 'Inter', sans-serif;
+            color: #3d2f32;
+            padding: 20px;
+            background: white;
+        }
+        .report-pdf .header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .report-pdf .header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .report-pdf .header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin: 5px 0 0;
+        }
+        .report-pdf .header p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .report-pdf .stats-grid {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .report-pdf .stat-card {
+            flex: 1;
+            background: #faf5f2;
+            border: 1px solid #ece2de;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        .report-pdf .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .report-pdf .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        .report-pdf table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .report-pdf th {
+            background: var(--primary);
+            color: white;
+            padding: 8px 10px;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        .report-pdf td {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #ece2de;
+        }
+        .report-pdf .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            border-top: 1px solid #ece2de;
+            padding-top: 10px;
+        }
+        .report-pdf .espaco-lideres {
+            margin-top: 20px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+        .report-pdf .espaco-lideres h4 {
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+        }
+        .report-pdf .espaco-lideres .linha {
+            display: inline-block;
+            width: 120px;
+            border-bottom: 1px solid #000;
+            margin: 0 10px;
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 640px) {
+            .page { padding: 1rem 0.8rem 0; }
+            .topbar { padding: 0.9rem 1rem; }
+            .present-item { flex-direction: column; align-items: flex-start; }
+            .present-actions { align-self: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOPBAR ===== -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <img src="logo.png" alt="Radicais Kids" class="topbar-logo-img">
+            <div>
+                <h1>Radicais Kids</h1>
+                <span>Controle de Salas e Crianças</span>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <button class="icon-btn" onclick="refreshPresentList()" title="Recarregar">🔄</button>
+            <button class="icon-btn" onclick="gerarRelatorio()" title="Relatório">📊</button>
+            <button class="icon-btn" onclick="cycleCamera()" title="Alternar câmera">⚙️</button>            
+            <button class="icon-btn" onclick="logout()" title="Sair">➜]</button>
+        </div>
+    </div>
+
+    <div class="page">
+        <!-- ===== SESSÃO ATIVA ===== -->
+        <div class="session-strip">
+            <!--<div class="session-strip-icon">📅</div>-->
+            <div class="session-strip-field">
+                <label>Sessão ativa</label>
+                <select id="sessionSelect" onchange="changeSession()"></select>
+            </div>
+            <!--<button class="btn-ghost" onclick="openSessionModal()">➕ Nova sessão</button> -->
+        </div>
+
+        <!-- ===== SCANNER QR ===== -->
+        <div class="scanner-hero">
+            <div class="scanner-hero-head" style="position:relative;">
+                <!--<div class="scanner-hero-icon">📷</div>-->
+                <div style="flex:1;">
+                    <h2>Escanear QR Code</h2>
+                    <p>Gerado no painel dos pais</p>
+                </div>
+                <button class="btn-visitante-discreto" onclick="openVisitanteModal()" title="Visitante" style="background:none; border:none; font-size:1.2rem; color:var(--primary); cursor:pointer; padding:4px 8px; border-radius:var(--radius-sm); transition:0.2s;">
+                    ➕
+                </button>
+            </div>
+            <div class="scanner-area">
+                <div id="reader"></div>
+                <div class="scanner-buttons">
+                    <button class="btn-primary" id="startScannerBtn" onclick="startScanner()">📸 Abrir Câmera</button>
+                    <button class="btn-secondary" id="stopScannerBtn" onclick="stopScanner()" style="display:none;">⏹️ Parar</button>
+                </div>
+                <select id="cameraSelect" style="display:none;"></select>
+                <div id="scanResult" class="scan-result"></div>
+            </div>
+        </div>
+
+        <!-- ===== SALAS + LISTA DE PRESENTES ===== -->
+        <div class="present-card">
+           <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <!--<label style="font-weight: 600; font-size: 0.85rem; color: var(--text-light);"></label>-->                
+                <select id="roomFilterSelect" style="flex: 1; min-width: 150px; padding: 0.6rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--input-bg); font-weight: 500;">
+                    <option value="todos">Todas as Salas</option>
+                    <option value="Babys">🍼 Babys</option>
+                    <option value="Kids">🧸 Kids</option>
+                    <option value="Juvenis">⚡ Juvenis</option>
+                </select>
+            </div>
+            <div id="presentList">Carregando...</div>
+        </div>
+        
+    </div>
+
+
+    <!-- Modal visitante -->
+    <div id="visitanteModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-title">📝 Visitante</div>
+            <input type="text" id="visitantName" placeholder="Nome da criança">
+            <label style="display:block; font-size:0.75rem; font-weight:600; color:var(--text-light); margin:0.6rem 0 0.25rem;">Data de nascimento</label>
+            <input type="date" id="visitantBirthDate">
+            <label style="display:block; font-size:0.75rem; font-weight:600; color:var(--text-light); margin:0.6rem 0 0.25rem;">Alergia</label>
+            <input type="text" id="visitantAllergies" placeholder="Ex: Leite, ovo... (deixe em branco se não houver)">
+            <label style="display:block; font-size:0.75rem; font-weight:600; color:var(--text-light); margin:0.6rem 0 0.25rem;">Responsável</label>
+            <input type="text" id="respName" placeholder="Nome do responsável">
+            <input type="tel" id="respPhone" placeholder="Telefone">
+            <button class="btn-primary" onclick="registerVisitant()" style="width:100%; justify-content:center; margin-top:0.8rem;">Continuar e selecionar sala</button>
+        </div>
+    </div>
+
+    <!-- Modal nova sessão -->
+    <div id="sessionModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSessionModal()">&times;</button>
+            <div class="modal-title">📅 Nova Sessão</div>
+            <input type="text" id="sessionName" placeholder="Nome (ex: Culto Domingo)">
+            <input type="date" id="sessionDate">
+            <input type="time" id="sessionStart" placeholder="Início">
+            <input type="time" id="sessionEnd" placeholder="Término">
+            <button class="btn-primary" onclick="createSession()" style="width:100%; justify-content:center;">Criar</button>
+        </div>
+    </div>
+
+    <!-- Modal detalhes da criança -->
+    <div id="childDetailsModal" class="modal">
+        <div class="modal-content" id="childDetailsContent"></div>
+    </div>
+
+    <!-- Modal mover para sala -->
+    <div id="roomModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeRoomModal()">&times;</button>
+            <div class="modal-title" id="roomModalTitle">Mover para sala</div>
+            <div id="roomChildrenList" class="room-list"></div>
+            <button class="btn-primary" onclick="saveRoomAssignments()" style="margin-top:1rem; width:100%; justify-content:center;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- Modal para selecionar sala antes do check-in -->
+    <div id="selectRoomModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" onclick="closeSelectRoomModal()">&times;</button>
+            <div class="modal-title" style="margin-bottom: 0.5rem;">🏷️ Check-in</div>
+            <div id="roomChildInfo" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--input-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.7rem;">
+                <!--<button class="room-option" data-room="todos" style="background: var(--room-todos); color: white; border: none; padding: 0.75rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;"> Todos</button>-->
+                <button class="room-option" data-room="Babys" style="background: var(--room-babys); color: white; border: none; padding: 0.75rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">🍼 Babys</button>
+                <button class="room-option" data-room="Kids" style="background: var(--room-kids); color: white; border: none; padding: 0.75rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">🧸 Kids</button>
+                <button class="room-option" data-room="Juvenis" style="background: var(--room-juvenis); color: white; border: none; padding: 0.75rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">⚡ Juvenis</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de checkout -->
+    <div id="checkoutConfirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" onclick="closeCheckoutConfirmModal()">&times;</button>
+            <div class="modal-title" style="margin-bottom: 0.5rem;">🔔 Confirmar Check-out</div>
+            <div id="checkoutChildInfo" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--input-bg); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <!-- Dados da criança serão preenchidos -->
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-direction: column;">
+                <button id="confirmCheckoutBtn" class="btn-primary" onclick="confirmCheckout()" style="background: var(--danger); justify-content:center; box-shadow:none;">✅ Confirmar Check-out</button>
+                <button class="btn-secondary" onclick="closeCheckoutConfirmModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DE RELATÓRIOS ===== -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;"> <!-- Original 700px -->
+            <button class="modal-close" onclick="fecharModalRelatorio()">&times;</button>
+            <div class="modal-title">📊 Relatórios</div>
+    
+            <!-- Abas dos tipos de relatório -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+                <button class="tab-relatorio active" data-tipo="sessao" onclick="trocarAbaRelatorio('sessao')">Sessão</button>
+                <button class="tab-relatorio" data-tipo="crianca" onclick="trocarAbaRelatorio('crianca')">Individual</button>
+                <button class="tab-relatorio" data-tipo="mes" onclick="trocarAbaRelatorio('mes')">Mês</button>
+                <button class="tab-relatorio" data-tipo="faltas" onclick="trocarAbaRelatorio('faltas')">Faltas</button>
+            </div>
+    
+            <!-- Conteúdo da aba Por Sessão -->
+            <div id="aba-sessao" class="aba-relatorio">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Sessão *</label>
+                        <select id="relSessaoSelect" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 100px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Sala</label>
+                        <select id="relSalaSelect" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                            <option value="todos">Todas</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Babys">Babys</option>
+                            <option value="Juvenis">Juvenis</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="gerarPDF('sessao')" style="width:100%; justify-content:center;">📄 Gerar PDF</button>
+            </div>
+    
+            <!-- Conteúdo da aba Por Mês -->
+            <div id="aba-mes" class="aba-relatorio" style="display:none;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Mês *</label>
+                        <input type="month" id="relMesInput" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Sala</label>
+                        <select id="relSalaMesSelect" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                            <option value="todos">Todas</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Babys">Babys</option>
+                            <option value="Juvenis">Juvenis</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="gerarPDF('mes')" style="width:100%; justify-content:center;">📄 Gerar PDF</button>
+            </div>
+    
+            <!-- Conteúdo da aba Faltas -->
+            <div id="aba-faltas" class="aba-relatorio" style="display:none;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Ano *</label>
+                        <input type="number" id="relAnoInput" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);" placeholder="AAAA" value="2025">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Sala</label>
+                        <select id="relSalaFaltasSelect" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                            <option value="todos">Todas</option>
+                            <option value="Kids">Kids</option>
+                            <option value="Babys">Babys</option>
+                            <option value="Juvenis">Juvenis</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="gerarPDF('faltas')" style="width:100%; justify-content:center;">📄 Gerar PDF</button>
+            </div>
+
+            <!-- Conteúdo da aba Por Criança -->
+            <div id="aba-crianca" class="aba-relatorio" style="display:none;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Criança *</label>
+                        <select id="relCriancaSelect" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                            <option value="">Carregando crianças...</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Data Início</label>
+                        <input type="date" id="relCriancaDataInicio" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-weight: 600; font-size: 0.8rem;">Data Fim</label>
+                        <input type="date" id="relCriancaDataFim" style="width:100%; padding:0.5rem; border-radius:0.5rem; border:1px solid var(--border-color);">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="gerarPDF('crianca')" style="width:100%; justify-content:center;">📄 Gerar PDF</button>
+            </div>
+    
+            <div style="margin-top: 1rem; text-align: center;">
+                <button class="btn-secondary" onclick="fecharModalRelatorio()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área para impressão -->
+    <div id="printArea" style="display: none;"></div>
+    <div id="reportPrintArea" style="display: none;"></div>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPT (funcionalidades 100% mantidas, apenas ajuste visual) -->
+    <!-- ============================================================ -->
+    <script>
+        // ========== CONFIGURAÇÃO ==========
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
+        // ========== VARIÁVEIS (idênticas) ==========
+        let currentStaffId = null, currentSessionId = null, html5QrCode = null, scannerActive = false;
+        let autoRestartScanner = null;
+        let currentRoomFilter = 'todos';
+        let pendingRoom = null;
+        let childrenForRoom = [];
+        let pendingCheckinData = null;
+        let pendingCheckoutData = null;
+        //let availableCameras = [];
+
+        // ========== TOAST (mesmo) ==========
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+            toast.offsetHeight;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+        async function init() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = 'index.html'; return; }
+            currentStaffId = user.id;
+            registrarPush();
+            await loadSessions();
+            await loadCameras();
+            setupRoomFilter();
+        
+            /*document.getElementById('cameraSelect').addEventListener('change', (e) => {
+                localStorage.setItem('kidsCheckinCameraId', e.target.value);
+            });*/
+        
+            // 🔹 DELEGAÇÃO DE EVENTOS PARA OS BOTÕES DE SALA
+            document.getElementById('selectRoomModal').addEventListener('click', function(e) {
+                const btn = e.target.closest('.room-option');
+                if (btn) {
+                    const room = btn.dataset.room;
+                    confirmCheckinWithRoom(room);
+                }
+            });
+        }
+
+
+        // ==================== UTILITÁRIO DE FORMATAÇÃO DE DATA ====================
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            // Aceita formato YYYY-MM-DD
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const [year, month, day] = parts;
+            return `${day}/${month}/${year}`; // DD/MM/YYYY
+        }
+        
+       async function loadSessions() {
+                // Buscar todas as sessões (para popular o dropdown)
+                const { data: todas, error } = await supabaseClient
+                    .from('kids_sessions')
+                    .select('id, name, session_date, is_active')
+                    .order('session_date', { ascending: false });
+            
+                if (error) {
+                    console.error('Erro ao carregar sessões:', error);
+                    document.getElementById('sessionSelect').innerHTML = '<option>Erro ao carregar</option>';
+                    return;
+                }
+            
+                // Popular o dropdown
+                const select = document.getElementById('sessionSelect');
+                select.innerHTML = '';
+                if (todas && todas.length > 0) {
+                    todas.forEach(s => {
+                        const dataFormatada = new Date(s.session_date).toLocaleDateString('pt-BR');
+                        const label = `${s.name} ${s.is_active ? '🟢' : ''}`;
+                        const option = document.createElement('option');
+                        option.value = s.id;
+                        option.textContent = label;
+                        if (s.is_active) option.selected = true;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Nenhuma sessão</option>';
+                }
+            
+                // === AUTOMÁTICO: garantir sessão do domingo ===
+                const sessionId = await getOrCreateSundaySession();
+                if (sessionId) {
+                    // Se a sessão do domingo não estiver selecionada, seleciona
+                    if (select.value !== sessionId) {
+                        select.value = sessionId;
+                    }
+                    currentSessionId = sessionId;
+                } else {
+                    // Fallback: usar a primeira sessão da lista
+                    if (todas && todas.length > 0) {
+                        currentSessionId = todas[0].id;
+                        select.value = currentSessionId;
+                    } else {
+                        currentSessionId = null;
+                        showToast('Nenhuma sessão disponível. Crie uma manualmente.', 'error');
+                    }
+                }
+            
+                // Carregar lista de presentes após definir a sessão
+                await loadPresentList();
+            }
+
+        async function changeSession() {
+            currentSessionId = document.getElementById('sessionSelect').value;
+            await loadPresentList();
+            showToast('Sessão alterada', 'info');
+        }
+
+        function refreshPresentList() {
+            loadPresentList();
+            showToast('Lista atualizada', 'success');
+        }
+
+       function setupRoomFilter() {
+            const select = document.getElementById('roomFilterSelect');
+            if (!select) return;
+            select.addEventListener('change', async function() {
+                currentRoomFilter = this.value;
+                await loadPresentList();
+                // Opcional: manter seleção no localStorage
+                localStorage.setItem('kidsCheckinRoomFilter', currentRoomFilter);
+            });
+            // Restaurar filtro salvo, se houver
+            const savedFilter = localStorage.getItem('kidsCheckinRoomFilter');
+            if (savedFilter && ['todos','Babys','Kids','Juvenis'].includes(savedFilter)) {
+                select.value = savedFilter;
+                currentRoomFilter = savedFilter;
+            }
+        }
+
+        /*function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', async () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentRoomFilter = tab.dataset.room;
+                    await loadPresentList();
+                });
+            });
+        }*/
+
+        // ========== CÂMERAS ==========
+        /*async function loadCameras() {
+            try {
+                availableCameras = await Html5Qrcode.getCameras();
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = availableCameras.map(cam => `<option value="${cam.id}">${cam.label || cam.id}</option>`).join('');
+                select.style.display = availableCameras.length > 1 ? 'block' : 'none';
+                const savedCameraId = localStorage.getItem('kidsCheckinCameraId');
+                if (savedCameraId && availableCameras.some(c => c.id === savedCameraId)) {
+                    select.value = savedCameraId;
+                }
+            } catch (e) {
+                console.log('Não foi possível listar câmeras', e);
+            }
+        }*/
+
+        /*async function loadCameras() {
+            try {
+                const allCameras = await Html5Qrcode.getCameras();
+                // Filtra apenas câmeras com "back", "traseira", "environment" no label (case insensitive)
+                const backCameras = allCameras.filter(cam => {
+                    const label = cam.label.toLowerCase();
+                    return label.includes('back') || label.includes('traseira') || label.includes('environment') || label.includes('câmera traseira');
+                });
+                // Se não encontrar nenhuma, usa todas (fallback)
+                availableCameras = backCameras.length > 0 ? backCameras : allCameras;
+                
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = availableCameras.map(cam => `<option value="${cam.id}">${cam.label || cam.id}</option>`).join('');
+                select.style.display = availableCameras.length > 1 ? 'block' : 'none';
+                
+                const savedCameraId = localStorage.getItem('kidsCheckinCameraId');
+                if (savedCameraId && availableCameras.some(c => c.id === savedCameraId)) {
+                    select.value = savedCameraId;
+                }
+            } catch (e) {
+                console.log('Não foi possível listar câmeras', e);
+            }
+        }*/
+
+        async function loadCameras() {
+            try {
+                const allCameras = await Html5Qrcode.getCameras();
+                const backCameras = allCameras.filter(cam => {
+                    const label = cam.label.toLowerCase();
+                    return label.includes('back') || label.includes('traseira') || label.includes('environment') || label.includes('câmera traseira');
+                });
+                availableCameras = backCameras.length > 0 ? backCameras : allCameras;
+                // Restaurar a câmera salva
+                const savedCameraId = localStorage.getItem('kidsCheckinCameraId');
+                if (savedCameraId && availableCameras.some(c => c.id === savedCameraId)) {
+                    currentCameraIndex = availableCameras.findIndex(c => c.id === savedCameraId);
+                    if (currentCameraIndex === -1) currentCameraIndex = 0;
+                } else {
+                    currentCameraIndex = 0;
+                    if (availableCameras.length) {
+                        localStorage.setItem('kidsCheckinCameraId', availableCameras[0].id);
+                    }
+                }
+            } catch (e) {
+                console.log('Não foi possível listar câmeras', e);
+            }
+        }
+
+        function cycleCamera() {
+            if (!availableCameras.length) {
+                showToast('Nenhuma câmera disponível', 'error');
+                return;
+            }
+            // Avança para a próxima câmera
+            currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+            const selectedCamera = availableCameras[currentCameraIndex];
+            // Salva no localStorage
+            localStorage.setItem('kidsCheckinCameraId', selectedCamera.id);
+            // Se o scanner estiver ativo, reinicia
+            if (scannerActive) {
+                stopScanner();
+                // Pequeno delay para reiniciar
+                setTimeout(() => startScanner(), 300);
+            }
+            showToast(`Câmera: ${selectedCamera.label || selectedCamera.id}`, 'info');
+        }
+
+        // ========== SCANNER ==========
+        /*async function startScanner() {
+            if (scannerActive) return;
+            html5QrCode = new Html5Qrcode("reader");
+            if (!availableCameras.length) await loadCameras();
+            const select = document.getElementById('cameraSelect');
+            const chosenCameraId = select.value || (availableCameras[0] && availableCameras[0].id);
+            try {
+                const cameraConfig = chosenCameraId ? { deviceId: { exact: chosenCameraId } } : { facingMode: "environment" };
+                await html5QrCode.start(cameraConfig, { fps: 10, qrbox: 250 }, onScanSuccess, onScanError);
+                scannerActive = true;
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'inline-block';
+                showToast('Câmera ativada', 'success');
+            } catch(e) { showToast('Erro ao acessar câmera: '+e, 'error'); }
+        }*/
+        async function startScanner() {
+            if (scannerActive) return;
+            html5QrCode = new Html5Qrcode("reader");
+            if (!availableCameras.length) await loadCameras();
+        
+            // Determina o ID da câmera a usar
+            const savedCameraId = localStorage.getItem('kidsCheckinCameraId');
+            let chosenCameraId = null;
+            if (savedCameraId && availableCameras.some(c => c.id === savedCameraId)) {
+                chosenCameraId = savedCameraId;
+                // Atualiza o índice atual para a câmera salva
+                const idx = availableCameras.findIndex(c => c.id === savedCameraId);
+                if (idx !== -1) currentCameraIndex = idx;
+            } else {
+                // Se não houver salva, usa a primeira (traseira)
+                chosenCameraId = availableCameras[0]?.id || null;
+                if (chosenCameraId) {
+                    localStorage.setItem('kidsCheckinCameraId', chosenCameraId);
+                    currentCameraIndex = 0;
+                }
+            }
+        
+            try {
+                const cameraConfig = chosenCameraId ? { deviceId: { exact: chosenCameraId } } : { facingMode: "environment" };
+                await html5QrCode.start(cameraConfig, { fps: 10, qrbox: 250 }, onScanSuccess, onScanError);
+                scannerActive = true;
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'inline-block';
+                showToast('Câmera ativada', 'success');
+            } catch(e) {
+                showToast('Erro ao acessar câmera: '+e, 'error');
+            }
+        }
+
+        function stopScanner() {
+            if (html5QrCode && scannerActive) {
+                html5QrCode.stop();
+                scannerActive = false;
+                document.getElementById('startScannerBtn').style.display = 'inline-block';
+                document.getElementById('stopScannerBtn').style.display = 'none';
+                showToast('Câmera desativada', 'info');
+            }
+            if (autoRestartScanner) clearTimeout(autoRestartScanner);
+        }
+
+        async function onScanSuccess(decodedText) {
+            stopScanner();
+            await processToken(decodedText);
+        }
+
+        function onScanError(err) { console.log(err); }
+
+        // ========== PROCESSAR TOKEN (check‑in / checkout) – MESMO CÓDIGO ==========
+        async function processToken(token) {
+            const { data: tokenData, error: tokenError } = await supabaseClient
+                .from('kids_temporary_tokens')
+                .select('*, child:child_id(id, name, allergies, birth_date, photo_url, family:family_id(father_name, father_phone, mother_name, mother_phone))')
+                .eq('token', token)
+                .single();
+            if (tokenError || !tokenData) {
+                document.getElementById('scanResult').innerHTML = '❌ QR inválido.';
+                showToast('QR inválido', 'error');
+                return;
+            }
+            if (new Date(tokenData.expires_at) < new Date()) {
+                document.getElementById('scanResult').innerHTML = '❌ QR expirado.';
+                showToast('QR expirado', 'error');
+                return;
+            }
+            const childId = tokenData.child_id;
+            const childName = tokenData.child?.name || 'Criança';
+            const allergies = tokenData.child?.allergies || '';
+            const { data: activeCheckin } = await supabaseClient
+                .from('kids_check_ins')
+                .select('id')
+                .eq('child_id', childId)
+                .eq('session_id', currentSessionId)
+                .is('checked_out_at', null)
+                .maybeSingle();
+            if (activeCheckin) {
+                openCheckoutConfirmModal(childId, activeCheckin.id);
+                document.getElementById('scanResult').innerHTML = `🔔 Escaneado: ${childName}`;
+                return;
+            }
+            const birthDate = tokenData.child?.birth_date || null;
+            const photoUrl = tokenData.child?.photo_url || null;
+            const family = tokenData.child?.family || {};
+            pendingCheckinData = {
+                tokenId: tokenData.id,
+                childId: childId,
+                childName: childName,
+                allergies: allergies,
+                birthDate: birthDate,
+                tokenValue: token
+            };
+            openSelectRoomModal(childName, allergies, birthDate, {
+                photoUrl,
+                fatherName: family.father_name,
+                fatherPhone: family.father_phone,
+                motherName: family.mother_name,
+                motherPhone: family.mother_phone
+            });
+        }
+
+        // ========== CALCULAR IDADE ==========
+        function calcularIdade(birthDateStr) {
+            if (!birthDateStr) return 0;
+            const birth = new Date(birthDateStr);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            return age;
+        }
+
+        // ========== MODAL SALA ==========
+        function openSelectRoomModal(childName, allergies, birthDate, extra = {}) {
+            const infoDiv = document.getElementById('roomChildInfo');
+            let idadeHtml = '';
+            if (birthDate) {
+                const idade = calcularIdade(birthDate);
+                idadeHtml = `<div style="color: var(--text-light); font-size:0.9rem;">📅 Idade: ${idade} anos</div>`;
+            }
+
+            const fotoHtml = extra.photoUrl
+                ? `<img src="${extra.photoUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto 0.5rem;display:block;border:2px solid var(--border-color);">`
+                : `<div style="width:72px;height:72px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 0.5rem;">👶</div>`;
+
+            let contatosHtml = '';
+            if (extra.isVisitor) {
+                contatosHtml = `
+                    <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed var(--border-color); font-size:0.8rem; color:var(--text-light); text-align:left;">
+                        <div>🧑 Resp: ${escapeHtml(extra.respName) || 'Não informado'} ${extra.respPhone ? `· 📞 ${escapeHtml(extra.respPhone)}` : ''}</div>
+                    </div>
+                `;
+            } else {
+                const temPai = extra.fatherName || extra.fatherPhone;
+                const temMae = extra.motherName || extra.motherPhone;
+                contatosHtml = `
+                    <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px dashed var(--border-color); font-size:0.8rem; color:var(--text-light); text-align:center;">
+                        <div>👨 Pai: ${temPai ? `${escapeHtml(extra.fatherName) || 'Não informado'} ${extra.fatherPhone ? `· 📞 ${escapeHtml(extra.fatherPhone)}` : '· <span style="color:var(--danger);">sem telefone</span>'}` : `<span style="color:var(--danger);">Não cadastrado</span>`}</div>
+                        <div>👩 Mãe: ${temMae ? `${escapeHtml(extra.motherName) || 'Não informado'} ${extra.motherPhone ? `· 📞 ${escapeHtml(extra.motherPhone)}` : '· <span style="color:var(--danger);">sem telefone</span>'}` : `<span style="color:var(--danger);">Não cadastrada</span>`}</div>
+                    </div>
+                `;
+            }
+
+            infoDiv.innerHTML = `
+                ${fotoHtml}
+                <div style="font-size:1.2rem; font-weight:700; margin-bottom:0.3rem;">${escapeHtml(childName)}</div>
+                ${idadeHtml}
+                ${allergies ? `<div class="badge" style="background:#fee2e2; color:#b91c1c; margin-top:0.3rem;">⚠️ Alergia: ${escapeHtml(allergies)}</div>` : '<div style="color:var(--text-light);">Sem alergias</div>'}
+                ${contatosHtml}
+            `;
+            document.getElementById('selectRoomModal').style.display = 'flex';
+        }
+
+        function closeSelectRoomModal() {
+            document.getElementById('selectRoomModal').style.display = 'none';
+            pendingCheckinData = null;
+        }
+
+        // ========== CONFIRMAR CHECK‑IN ==========
+        async function confirmCheckinWithRoom(room) {
+            if (!pendingCheckinData) return;
+            const { tokenId, childId, childName, allergies, tokenValue, birthDate } = pendingCheckinData;
+            const badgeNumber = null;
+            const { data: childData, error: childError } = await supabaseClient
+                .from('kids_children')
+                .select('*, family:family_id(*)')
+                .eq('id', childId)
+                .single();
+            if (childError || !childData) {
+                showToast('Erro ao buscar dados da criança', 'error');
+                return;
+            }
+            const family = childData.family || {};
+            const { data: newCheckin, error: insertError } = await supabaseClient
+                .from('kids_check_ins')
+                .insert({
+                    child_id: childId,
+                    session_id: currentSessionId,
+                    checked_in_by: currentStaffId,
+                    token_id: tokenId,
+                    room: room,
+                    badge_number: badgeNumber
+                })
+                .select()
+                .single();
+            if (insertError) {
+                showToast('Erro no check‑in', 'error');
+                document.getElementById('scanResult').innerHTML = '❌ Erro no check‑in.';
+            } else {
+                const roomDisplay = room === 'todos' ? 'Todos' : room;
+                document.getElementById('scanResult').innerHTML = `✅ Check‑in: ${childName} (${roomDisplay})`;
+                showToast(`Check‑in: ${childName} - Sala ${roomDisplay}`, 'success');
+                await loadPresentList();
+                let idade = '';
+                if (birthDate) {
+                    const idadeNum = calcularIdade(birthDate);
+                    idade = `${idadeNum} anos`;
+                }
+                const isVisitor = !!childData.is_visitor;
+                const fatherPhone = isVisitor ? (childData.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
+                const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
+                printLabel(tokenValue, childName, allergies, idade, fatherPhone, motherPhone, newCheckin.id, {
+                    isVisitor,
+                    respName: childData.visitor_responsible_name || ''
+                });
+                enviarPush({
+                    event: 'checkin',
+                    checkinId: newCheckin.id,
+                    childId: childId,
+                    childName: childName,
+                    room: room
+                });
+            }
+            closeSelectRoomModal();
+        }
+
+        // ========== IMPRIMIR ETIQUETA (RawBT) ==========
+      /*  async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId) {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            document.body.appendChild(tempDiv);
+            new QRCode(tempDiv, { text: qrToken, width: 240, height: 240 });
+            await new Promise(resolve => setTimeout(resolve, 300));
+            let qrSrc = '';
+            const canvasQr = tempDiv.querySelector('canvas');
+            const imgQr = tempDiv.querySelector('img');
+            if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+            else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+            document.body.removeChild(tempDiv);
+            const labelContainer = document.createElement('div');
+            labelContainer.style.position = 'fixed';
+            labelContainer.style.left = '-9999px';
+            labelContainer.style.top = '0';
+            labelContainer.style.width = '384px';
+            labelContainer.style.height = '240px';
+            labelContainer.innerHTML = `
+                <div style="width:384px;height:240px;padding:1px;box-sizing:border-box;background:#fff;color:#000;
+                            font-family:Arial, Helvetica, sans-serif;display:flex;align-items:center;gap:8px;overflow:hidden;">
+                    <div style="flex:0 0 154px;width:154px;height:154px;">
+                        ${qrSrc ? `<img src="${qrSrc}" style="width:154px;height:154px;display:block;">` : ''}
+                    </div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;">
+                        <div style="font-size:24px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                        ${idade ? `<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                        ${allergies ? `<div style="font-size:17px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(labelContainer);
+            const canvasEtiqueta = await html2canvas(labelContainer, {
+                width: 384, height: 240, scale: 1, backgroundColor: '#ffffff'
+            });
+            document.body.removeChild(labelContainer);
+            const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+            window.location.href = 'rawbt:' + etiquetaBase64;
+        }*/
+
+        /*async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId) {
+    // ===== AJUSTE AQUI =====
+    // A etiqueta física é 48mm x 30mm (384px x 240px a 8px/mm).
+    // Como a impressora (KP-1025) não tem sensor de gap, ela avança
+    // exatamente o que mandarmos. Por isso geramos a imagem um pouco
+    // MENOR que 30mm de altura, pra sobrar margem e não invadir a próxima etiqueta.
+    // Se ainda estiver avançando demais, DIMINUA o valor abaixo (ex: 200, 190...).
+    // Se sobrar espaço em branco grande no fim, AUMENTE (ex: 224, 230...).
+    const LABEL_WIDTH = 384;   // 48mm - não mexer
+    const LABEL_HEIGHT = 216;  // ~27mm - ajuste este valor testando na prática
+
+    // 1) Gera o QR Code num container temporário anexado ao body
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'fixed';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, { text: qrToken, width: 240, height: 240 });
+    await new Promise(resolve => setTimeout(resolve, 300));
+    let qrSrc = '';
+    const canvasQr = tempDiv.querySelector('canvas');
+    const imgQr = tempDiv.querySelector('img');
+    if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+    else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+    document.body.removeChild(tempDiv);
+
+    // 2) Monta a etiqueta em tamanho REAL de impressora (com altura ajustada)
+    const labelContainer = document.createElement('div');
+    labelContainer.style.position = 'fixed';
+    labelContainer.style.left = '-9999px';
+    labelContainer.style.top = '0';
+    labelContainer.style.width = LABEL_WIDTH + 'px';
+    labelContainer.style.height = LABEL_HEIGHT + 'px';
+    labelContainer.innerHTML = `
+        <div style="width:${LABEL_WIDTH}px;height:${LABEL_HEIGHT}px;padding:6px;box-sizing:border-box;background:#fff;color:#000;
+                    font-family:Arial, Helvetica, sans-serif;display:flex;align-items:center;gap:8px;overflow:hidden;">
+            <div style="flex:0 0 154px;width:154px;height:154px;">
+                ${qrSrc ? `<img src="${qrSrc}" style="width:154px;height:154px;display:block;">` : ''}
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;">
+                <div style="font-size:24px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                ${idade ? `<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                ${allergies ? `<div style="font-size:17px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(labelContainer);
+
+    // 3) Transforma a etiqueta INTEIRA numa única imagem
+    const canvasEtiqueta = await html2canvas(labelContainer, {
+        width: LABEL_WIDTH, height: LABEL_HEIGHT, scale: 1, backgroundColor: '#ffffff'
+    });
+    document.body.removeChild(labelContainer);
+    const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+
+    // 4) Envia DIRETO pro RawBT
+    window.location.href = 'rawbt:' + etiquetaBase64;
+}*/
+
+        async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId, opts = {}) {
+            const LABEL_WIDTH = 384; // 384 original 
+            const LABEL_HEIGHT = 200; //ogirinal é 216 //184 FICOU exaamente do tamanho da etiqueta // usando 176 pra testar  (176 / 184 / 192 / 200 / 208 /)
+        
+            // Gera QR Code
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            document.body.appendChild(tempDiv);
+            new QRCode(tempDiv, { text: qrToken, width: 240, height: 240 });
+            await new Promise(resolve => setTimeout(resolve, 300));
+            let qrSrc = '';
+            const canvasQr = tempDiv.querySelector('canvas');
+            const imgQr = tempDiv.querySelector('img');
+            if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+            else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+            document.body.removeChild(tempDiv);
+        
+            // Monta etiqueta com logo
+            const labelContainer = document.createElement('div');
+            labelContainer.style.position = 'fixed';
+            labelContainer.style.left = '-9999px';
+            labelContainer.style.top = '0';
+            labelContainer.style.width = LABEL_WIDTH + 'px'; //style="width:154px;height:154px;display:block; / align-items:center;
+            labelContainer.style.height = LABEL_HEIGHT + 'px';
+            labelContainer.innerHTML = `
+                <div style="width:${LABEL_WIDTH}px;height:${LABEL_HEIGHT}px;padding:4px;box-sizing:border-box;background:#fff;color:#000;
+                            font-family:Arial, Helvetica, sans-serif;display:flex;justify-content: flex-end;gap:8px;overflow:hidden;position:relative;">
+                    <img src="logo2.png" alt="Logo" style="position:absolute; top:6px; right:32px; width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:0 0 154px;width:154px;height:154px;">
+                        ${qrSrc ? `<img src="${qrSrc}" style="width:154px;height:154px;display:block;">` : ''}
+                        <!--${qrSrc ? `<img src="${qrSrc}" style="flex:0 0 154px;width:154px;height:154px;margin-left: 10px;">` : ''}-->
+                    </div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;padding-right:32px;">
+                        <div style="font-size:24px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                        ${idade ? `<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                        ${allergies ? `<div style="font-size:17px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                        ${opts.isVisitor ? `
+                        <div style="font-size:17px;font-weight:bold;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Visitante</div>
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Resp: ${escapeHtml(opts.respName || '')}</div>
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Tel: ${escapeHtml(fatherPhone)}</div>
+                        ` : `
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+                        `}
+                        <!--<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><br>Domingo Kids</div>-->
+                        <!--<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><br>Igreja Videira - Jataí</div>-->
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(labelContainer);
+        
+            // Captura com html2canvas
+            const canvasEtiqueta = await html2canvas(labelContainer, {
+                width: LABEL_WIDTH, height: LABEL_HEIGHT, scale: 1, backgroundColor: '#ffffff'
+            });
+            document.body.removeChild(labelContainer);
+            const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+        
+            // Envia para impressora (RawBT)
+            window.location.href = 'rawbt:' + etiquetaBase64;
+        }
+        
+
+        // ========== REIMPRESSÃO ==========
+        async function reprintLabelFromList(checkinId) {
+            showToast('Gerando 2ª via da etiqueta...', 'info');
+            const { data: checkin, error } = await supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(*, family:family_id(*)), token:token_id(token, expires_at)')
+                .eq('id', checkinId)
+                .single();
+            if (error || !checkin) {
+                showToast('Erro ao buscar dados para reimpressão', 'error');
+                return;
+            }
+            const child = checkin.child || {};
+            const family = child.family || {};
+            if (!checkin.token || !checkin.token.token) {
+                showToast('Não foi possível encontrar o QR original desta criança', 'error');
+                return;
+            }
+            let idade = '';
+            if (child.birth_date) idade = `${calcularIdade(child.birth_date)} anos`;
+            const isVisitor = !!child.is_visitor;
+            const fatherPhone = isVisitor ? (child.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
+            const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
+            await printLabel(
+                checkin.token.token,
+                child.name || 'Criança',
+                child.allergies || '',
+                idade,
+                fatherPhone,
+                motherPhone,
+                checkin.id,
+                { isVisitor, respName: child.visitor_responsible_name || '' }
+            );
+            showToast('2ª via enviada para impressão', 'success');
+        }
+
+        // ========== DETALHES DA CRIANÇA ==========
+       async function showChildDetails(childId, checkinId) {
+            const { data: child, error } = await supabaseClient
+                .from('kids_children')
+                .select('*, family:family_id(*)')
+                .eq('id', childId)
+                .single();
+            if (error || !child) {
+                showToast('Erro ao carregar detalhes', 'error');
+                return;
+            }
+            const family = child.family || {};
+            const isVisitor = !!child.is_visitor;
+        
+            // Função auxiliar para gerar link do WhatsApp com nome personalizado
+            function gerarLinkWhatsApp(telefone, nomeResponsavel) {
+                if (!telefone) return '#';
+                const numeroLimpo = telefone.replace(/\D/g, '');
+                if (numeroLimpo.length < 10) return '#';
+                const nomeParaMensagem = nomeResponsavel || 'responsável';
+                const mensagem = `Olá *${nomeParaMensagem}!* 👋\n\nA ovelhinha *${child.name}* está precisando do papai ou da mamãe.\n\n⚠️ Solicitamos que o responsável compareça à sala do Domigo Kids assim que possível.\n\nObrigada! 🙏`;
+                return `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+            }
+
+            let contactsHtml = '';
+            if (isVisitor) {
+                const respName = child.visitor_responsible_name || 'Não informado';
+                const respPhone = child.visitor_responsible_phone || '';
+                const linkResp = gerarLinkWhatsApp(respPhone, respName);
+                const temResp = respPhone && respPhone.replace(/\D/g, '').length >= 10;
+                contactsHtml = `
+                    <div style="display:flex; justify-content:center;">
+                        <div style="flex:1; max-width:220px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.8rem; border:1px solid var(--border-color);">
+                            <div style="width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;">🧑</div>
+                            <div><strong>Responsável:</strong> ${escapeHtml(respName)}</div>
+                            <div style="font-size:0.85rem; color:var(--text-light);">📞 ${escapeHtml(respPhone) || '-'}</div>
+                            ${temResp ? `
+                                <a href="${linkResp}" target="_blank" style="display:inline-block; margin-top:0.5rem; background:#25D366; color:white; border:none; padding:0.4rem 0.8rem; border-radius:var(--radius-sm); font-weight:600; text-decoration:none; font-size:0.8rem; box-shadow:0 2px 8px rgba(37,211,102,0.25); transition:0.2s;">
+                                    <i class="fab fa-whatsapp"></i> 💬 Whatsapp
+                                </a>
+                            ` : `<div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-faint);">📱 Sem número</div>`}
+                        </div>
+                    </div>
+                `;
+            } else {
+                const linkPai = gerarLinkWhatsApp(family.father_phone, family.father_name);
+                const linkMae = gerarLinkWhatsApp(family.mother_phone, family.mother_name);
+                const temPai = family.father_phone && family.father_phone.replace(/\D/g, '').length >= 10;
+                const temMae = family.mother_phone && family.mother_phone.replace(/\D/g, '').length >= 10;
+                contactsHtml = `
+                    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                        <!-- Card do Pai -->
+                        <div style="flex:1; min-width:140px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.8rem; border:1px solid var(--border-color);">
+                            <div style="width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                                ${family.father_photo_url ? `<img src="${family.father_photo_url}" style="width:100%;height:100%;object-fit:cover;">` : '👨'}
+                            </div>
+                            <div><strong>Pai:</strong> ${escapeHtml(family.father_name) || 'Não informado'}</div>
+                            <div style="font-size:0.85rem; color:var(--text-light);">📞 ${escapeHtml(family.father_phone) || '-'}</div>
+                            ${temPai ? `
+                                <a href="${linkPai}" target="_blank" style="display:inline-block; margin-top:0.5rem; background:#25D366; color:white; border:none; padding:0.4rem 0.8rem; border-radius:var(--radius-sm); font-weight:600; text-decoration:none; font-size:0.8rem; box-shadow:0 2px 8px rgba(37,211,102,0.25); transition:0.2s;">
+                                    <i class="fab fa-whatsapp"></i> 💬 Whatsapp
+                                </a>
+                            ` : `<div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-faint);">📱 Sem número</div>`}
+                        </div>
+        
+                        <!-- Card da Mãe -->
+                        <div style="flex:1; min-width:140px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.8rem; border:1px solid var(--border-color);">
+                            <div style="width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                                ${family.mother_photo_url ? `<img src="${family.mother_photo_url}" style="width:100%;height:100%;object-fit:cover;">` : '👩'}
+                            </div>
+                            <div><strong>Mãe:</strong> ${escapeHtml(family.mother_name) || 'Não informado'}</div>
+                            <div style="font-size:0.85rem; color:var(--text-light);">📞 ${escapeHtml(family.mother_phone) || '-'}</div>
+                            ${temMae ? `
+                                <a href="${linkMae}" target="_blank" style="display:inline-block; margin-top:0.5rem; background:#25D366; color:white; border:none; padding:0.4rem 0.8rem; border-radius:var(--radius-sm); font-weight:600; text-decoration:none; font-size:0.8rem; box-shadow:0 2px 8px rgba(37,211,102,0.25); transition:0.2s;">
+                                    <i class="fab fa-whatsapp"></i> 💬 Whatsapp
+                                </a>
+                            ` : `<div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-faint);">📱 Sem número</div>`}
+                        </div>
+                    </div>
+                `;
+            }
+        
+            const html = `
+                <button class="modal-close" onclick="closeChildDetailsModal()">&times;</button>
+                <div style="text-align:center;">
+                    ${child.photo_url ? `<img src="${child.photo_url}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:0.5rem;">` : '<div style="width:100px;height:100px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem;margin:0 auto 0.5rem;">👶</div>'}
+                    <h3 style="margin:0.2rem 0;">${escapeHtml(child.name)} ${isVisitor ? `<span class="badge" style="background:var(--accent); color:#fff;">visitante</span>` : ''}</h3>
+                    <p style="margin:0.2rem 0;"><strong>📅 Nascimento:</strong> ${child.birth_date ? formatDate(child.birth_date) : 'Não informado'}</p>
+                    <p style="margin:0.2rem 0;"><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies) || 'Nenhuma'}</p>
+                    ${!isVisitor ? `<p style="margin:0.2rem 0;"><strong>🔹 Necessidades:</strong> ${escapeHtml(child.special_needs) || 'Nenhuma'}</p>` : ''}
+                </div>
+        
+                <hr style="margin:1rem 0; border-color:var(--border-color);">
+        
+                ${contactsHtml}
+        
+                <div style="margin-top:1.5rem; text-align:center;">
+                    <button class="btn-primary" onclick="checkoutManual('${checkinId}')" style="background:var(--danger); justify-content:center; width:100%; border:none; color:white; padding:0.7rem; border-radius:var(--radius-md); font-weight:600; cursor:pointer;">
+                        ⚠️ Check-out Manual (Não recomendado)
+                    </button>
+                </div>
+            `;
+        
+            document.getElementById('childDetailsContent').innerHTML = html;
+            document.getElementById('childDetailsModal').style.display = 'flex';
+        }
+        
+        function closeChildDetailsModal() { document.getElementById('childDetailsModal').style.display = 'none'; }
+        
+
+        // ========== LISTA DE PRESENTES ==========
+        async function loadPresentList() {
+            if (!currentSessionId) return;
+            let query = supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(id, name, allergies, birth_date, photo_url, is_visitor)')
+                .eq('session_id', currentSessionId)
+                .is('checked_out_at', null);
+            if (currentRoomFilter !== 'todos') {
+                query = query.eq('room', currentRoomFilter);
+            }
+            const { data: allCheckins } = await query;
+            let checkins = allCheckins;
+            if (currentRoomFilter !== 'todos') {
+                checkins = allCheckins?.filter(c => c.room === currentRoomFilter) || [];
+            }
+            let html = '';
+            /*if (currentRoomFilter !== 'todos') {
+                html += `
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                        <button class="btn-secondary" onclick="openRoomModal('${currentRoomFilter}')" style="display:flex; align-items:center; gap:0.4rem;">
+                            <span>🔄</span> Gerenciar crianças nesta sala
+                        </button>
+                    </div>
+                `;
+            }*/
+            if (checkins?.length) {
+                html += `<h4 style="margin-bottom:0.8rem; color:var(--primary);">Presentes ${currentRoomFilter !== 'todos' ? `(Sala: ${currentRoomFilter})` : ''}</h4>`;
+                for (const c of checkins) {
+                    let isBirthdayWeek = false;
+                    if (c.child.birth_date) {
+                        const birth = new Date(c.child.birth_date);
+                        const today = new Date();
+                        const weekLater = new Date();
+                        weekLater.setDate(today.getDate() + 7);
+                        const birthThisYear = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+                        if (birthThisYear >= today && birthThisYear <= weekLater) isBirthdayWeek = true;
+                    }
+                    const birthdayIcon = isBirthdayWeek ? '🎂 ' : '';
+                    const isVisitor = !!c.child.is_visitor;
+                    html += `
+                        <div class="present-item ${isVisitor ? 'visitant-item' : ''}" style="border-left-color: ${isVisitor ? 'var(--accent)' : (c.room === 'Kids' ? '#3b82f6' : (c.room === 'Babys' ? '#f59e0b' : (c.room === 'Juvenis' ? '#8b5cf6' : 'var(--success-text)')))}; padding:0.5rem 0.7rem; position:relative;">
+                            <div class="present-info">
+                                <div class="present-name" style="font-size:0.9rem;">${birthdayIcon}${escapeHtml(c.child.name)} ${isVisitor ? `<span class="badge" style="background:var(--accent); color:#fff;">visitante</span>` : ''} ${c.badge_number ? `<span class="badge">🏷️ ${c.badge_number}</span>` : ''} ${c.child.allergies ? '<span class="badge">⚠️</span>' : ''}</div>
+                                <div class="present-time" style="font-size:0.7rem; color:var(--text-light);">
+                                    Check‑in: ${new Date(c.checked_in_at).toLocaleTimeString()}
+                                    ${c.room !== 'todos' && currentRoomFilter === 'todos' ? ` · 📌 Sala: ${c.room}` : ''}
+                                </div>
+                            </div>
+                            <div class="present-actions" style="position:absolute; top:0.3rem; right:0.5rem; display:flex; gap:0.2rem;">
+                                <button class="btn-icon" onclick="showChildDetails('${c.child_id}', '${c.id}')" style="padding:0.2rem 0.5rem; font-size:0.75rem; border-radius:0.4rem;">👁️</button>
+                                <button class="btn-icon" onclick="reprintLabelFromList('${c.id}')" style="padding:0.2rem 0.5rem; font-size:0.75rem; border-radius:0.4rem;">🖨️</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (currentRoomFilter !== 'todos') {
+                html += `<p style="text-align:center;color:var(--text-light);">Nenhuma criança nesta sala. Clique em "Gerenciar" para adicionar.</p>`;
+            } else {
+                html = '<p style="text-align:center;color:var(--text-light);">Nenhuma criança presente.</p>';
+            }
+            document.getElementById('presentList').innerHTML = html;
+        }
+
+        
+        // ========== CHECKOUT MANUAL ==========
+        async function checkoutManual(checkinId) {
+            await supabaseClient.from('kids_check_ins').update({ checked_out_at: new Date().toISOString() }).eq('id', checkinId);
+            const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).single();
+            if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
+            enviarPush({ event: 'checkout', checkinId: checkinId });
+            await loadPresentList();
+            showToast('Check‑out manual realizado', 'success');
+        }
+
+        // ========== ROOM MODAL ==========
+        async function openRoomModal(roomName) {
+            pendingRoom = roomName;
+            const { data: checkins } = await supabaseClient
+                .from('kids_check_ins')
+                .select('id, child_id, child:child_id(id, name, birth_date, photo_url)')
+                .eq('session_id', currentSessionId)
+                .is('checked_out_at', null);
+            if (!checkins?.length) {
+                showToast('Não há crianças presentes', 'error');
+                return;
+            }
+            const { data: assigned } = await supabaseClient
+                .from('kids_check_ins')
+                .select('id, room')
+                .eq('session_id', currentSessionId)
+                .in('id', checkins.map(c => c.id));
+            const roomMap = new Map();
+            assigned?.forEach(a => roomMap.set(a.id, a.room));
+            childrenForRoom = checkins.map(c => ({
+                checkinId: c.id,
+                childId: c.child_id,
+                name: c.child.name,
+                photo: c.child.photo_url,
+                birth_date: c.child.birth_date,
+                currentRoom: roomMap.get(c.id) || 'todos'
+            }));
+            document.getElementById('roomModalTitle').innerHTML = `Mover para sala: ${roomName}`;
+            const container = document.getElementById('roomChildrenList');
+            container.innerHTML = childrenForRoom.map(child => `
+                <div class="room-item">
+                    ${child.photo ? `<img src="${child.photo}" onerror="this.src='https://via.placeholder.com/40'">` : '<div style="width:45px;height:45px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;">👶</div>'}
+                    <label style="flex:1;">
+                        <input type="checkbox" class="room-checkbox" data-checkin-id="${child.checkinId}" ${child.currentRoom === pendingRoom ? 'checked' : ''}>
+                        ${escapeHtml(child.name)} ${child.birth_date ? `(${calcularIdade(child.birth_date)} anos)` : ''}
+                    </label>
+                </div>
+            `).join('');
+            document.getElementById('roomModal').style.display = 'flex';
+        }
+
+        async function saveRoomAssignments() {
+            const checkboxes = document.querySelectorAll('.room-checkbox');
+            const updates = [];
+            for (const cb of checkboxes) {
+                const checkinId = cb.dataset.checkinId;
+                const shouldAssign = cb.checked;
+                if (shouldAssign) {
+                    updates.push({ id: checkinId, room: pendingRoom });
+                } else {
+                    const child = childrenForRoom.find(c => c.checkinId == checkinId);
+                    if (child && child.currentRoom === pendingRoom) {
+                        updates.push({ id: checkinId, room: 'todos' });
+                    }
+                }
+            }
+            for (const upd of updates) {
+                await supabaseClient.from('kids_check_ins').update({ room: upd.room }).eq('id', upd.id);
+            }
+            closeRoomModal();
+            await loadPresentList();
+            showToast('Salas atualizadas', 'success');
+        }
+
+        function closeRoomModal() { document.getElementById('roomModal').style.display = 'none'; pendingRoom = null; }
+
+        // ========== VISITANTE ==========
+        async function registerVisitant() {
+            const childName = document.getElementById('visitantName').value.trim();
+            const birthDate = document.getElementById('visitantBirthDate').value || null;
+            const allergies = document.getElementById('visitantAllergies').value.trim();
+            const respName = document.getElementById('respName').value.trim();
+            const respPhone = document.getElementById('respPhone').value.trim();
+            if (!childName || !respName) { showToast('Preencha nome da criança e responsável', 'error'); return; }
+
+            // 1) Cria um registro de criança "visitante" (mesma tabela das crianças normais,
+            //    só que marcado com is_visitor = true e sem família vinculada)
+            const { data: child, error: childError } = await supabaseClient
+                .from('kids_children')
+                .insert({
+                    name: childName,
+                    birth_date: birthDate,
+                    allergies: allergies || null,
+                    is_visitor: true,
+                    visitor_responsible_name: respName,
+                    visitor_responsible_phone: respPhone || null
+                })
+                .select()
+                .single();
+            if (childError || !child) { showToast('Erro ao registrar visitante: ' + (childError?.message || ''), 'error'); return; }
+
+            // 2) Gera um token temporário pra esse visitante, igual ao QR que os pais geram no painel
+            const tokenValue = crypto.randomUUID();
+            const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(); // válido por 12h
+            const { data: tokenRow, error: tokenError } = await supabaseClient
+                .from('kids_temporary_tokens')
+                .insert({ token: tokenValue, child_id: child.id, expires_at: expiresAt })
+                .select()
+                .single();
+            if (tokenError || !tokenRow) { showToast('Erro ao gerar QR do visitante', 'error'); return; }
+
+            // Limpa e fecha o modal de visitante
+            document.getElementById('visitantName').value = '';
+            document.getElementById('visitantBirthDate').value = '';
+            document.getElementById('visitantAllergies').value = '';
+            document.getElementById('respName').value = '';
+            document.getElementById('respPhone').value = '';
+            closeModal();
+
+            // 3) Abre o MESMO modal de seleção de sala e segue a MESMA rotina do check-in por QR
+            pendingCheckinData = {
+                tokenId: tokenRow.id,
+                childId: child.id,
+                childName: childName,
+                allergies: allergies,
+                birthDate: birthDate,
+                tokenValue: tokenValue
+            };
+            openSelectRoomModal(childName, allergies, birthDate, {
+                isVisitor: true,
+                respName: respName,
+                respPhone: respPhone
+            });
+        }
+
+        // ========== SESSÃO ==========
+        function openSessionModal() { document.getElementById('sessionModal').style.display = 'flex'; }
+        function closeSessionModal() { document.getElementById('sessionModal').style.display = 'none'; }
+        async function createSession() {
+            const name = document.getElementById('sessionName').value.trim();
+            const date = document.getElementById('sessionDate').value;
+            const start = document.getElementById('sessionStart').value;
+            const end = document.getElementById('sessionEnd').value;
+            if (!name || !date) { showToast('Nome e data são obrigatórios', 'error'); return; }
+            const { error } = await supabaseClient.from('kids_sessions').insert({
+                name, session_date: date, start_time: start, end_time: end, is_active: true
+            });
+            if (error) showToast(error.message, 'error');
+            else {
+                showToast('Sessão criada!', 'success');
+                closeSessionModal();
+                await loadSessions();
+                document.getElementById('sessionName').value = '';
+                document.getElementById('sessionDate').value = '';
+                document.getElementById('sessionStart').value = '';
+                document.getElementById('sessionEnd').value = '';
+            }
+        }
+
+        function openVisitanteModal() { document.getElementById('visitanteModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('visitanteModal').style.display = 'none'; }
+
+        // ========== RELATÓRIO (abrir modal) ==========
+        function gerarRelatorio() {
+            if (!currentSessionId) {
+                showToast('Selecione uma sessão primeiro.', 'error');
+                return;
+            }
+            abrirModalRelatorio();
+        }
+
+        // ========== CHECKOUT COM CONFIRMAÇÃO ==========
+       function openCheckoutConfirmModal(childId, checkinId) {
+    supabaseClient
+        .from('kids_children')
+        .select('*, family:family_id(*)')
+        .eq('id', childId)
+        .single()
+        .then(({ data: child, error }) => {
+            if (error) {
+                showToast('Erro ao carregar dados', 'error');
+                return;
+            }
+            const family = child.family || {};
+            const idade = child.birth_date ? `${calcularIdade(child.birth_date)} anos` : 'Não informado';
+
+            // Mesma função usada no "olhinho" (showChildDetails), pra padronizar a mensagem
+            function gerarLinkWhatsApp(telefone, nomeResponsavel) {
+                if (!telefone) return '#';
+                const numeroLimpo = telefone.replace(/\D/g, '');
+                if (numeroLimpo.length < 10) return '#';
+                const nomeParaMensagem = nomeResponsavel || 'responsável';
+                const mensagem = `Olá *${nomeParaMensagem}!* 👋\n\nA ovelhinha *${child.name}* está precisando do papai ou da mamãe.\n\n⚠️ Solicitamos que o responsável compareça à sala do Domigo Kids assim que possível.\n\nObrigada! 🙏`;
+                return `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+            }
+
+            const linkPai = gerarLinkWhatsApp(family.father_phone, family.father_name);
+            const linkMae = gerarLinkWhatsApp(family.mother_phone, family.mother_name);
+            const temPai = family.father_phone && family.father_phone.replace(/\D/g, '').length >= 10;
+            const temMae = family.mother_phone && family.mother_phone.replace(/\D/g, '').length >= 10;
+
+            const html = `
+                <div style="text-align:center;">
+                    ${child.photo_url ? `<img src="${child.photo_url}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:0.5rem;">` : '<div style="width:80px;height:80px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 0.5rem;">👶</div>'}
+                    <h3 style="margin:0.2rem 0;">${escapeHtml(child.name)}</h3>
+                    <p style="margin:0.2rem 0;"><strong>📅 Idade:</strong> ${idade}</p>
+                    ${child.allergies ? `<p style="margin:0.2rem 0;"><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies)}</p>` : ''}
+                    ${child.special_needs ? `<p style="margin:0.2rem 0;"><strong>🔹 Necessidades:</strong> ${escapeHtml(child.special_needs)}</p>` : ''}
+                </div>
+
+                <hr style="margin:1rem 0; border-color:var(--border-color);">
+
+                <div style="display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap;">
+                    <!-- Card do Pai -->
+                    <div style="flex:1; min-width:130px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.7rem; border:1px solid var(--border-color);">
+                        <div style="width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                            ${family.father_photo_url ? `<img src="${family.father_photo_url}" style="width:100%;height:100%;object-fit:cover;">` : '👨'}
+                        </div>
+                        <div style="font-size:0.85rem;"><strong>Pai:</strong> ${escapeHtml(family.father_name) || 'Não informado'}</div>
+                        <div style="font-size:0.78rem; color:var(--text-light);">📞 ${escapeHtml(family.father_phone) || '-'}</div>
+                        ${temPai ? `
+                            <a href="${linkPai}" target="_blank" style="display:inline-block; margin-top:0.4rem; background:#25D366; color:white; border:none; padding:0.35rem 0.7rem; border-radius:var(--radius-sm); font-weight:600; text-decoration:none; font-size:0.75rem; box-shadow:0 2px 8px rgba(37,211,102,0.25);">
+                                💬 WhatsApp
+                            </a>
+                        ` : `<div style="margin-top:0.4rem; font-size:0.7rem; color:var(--text-faint);">📱 Sem número</div>`}
+                    </div>
+
+                    <!-- Card da Mãe -->
+                    <div style="flex:1; min-width:130px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.7rem; border:1px solid var(--border-color);">
+                        <div style="width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                            ${family.mother_photo_url ? `<img src="${family.mother_photo_url}" style="width:100%;height:100%;object-fit:cover;">` : '👩'}
+                        </div>
+                        <div style="font-size:0.85rem;"><strong>Mãe:</strong> ${escapeHtml(family.mother_name) || 'Não informado'}</div>
+                        <div style="font-size:0.78rem; color:var(--text-light);">📞 ${escapeHtml(family.mother_phone) || '-'}</div>
+                        ${temMae ? `
+                            <a href="${linkMae}" target="_blank" style="display:inline-block; margin-top:0.4rem; background:#25D366; color:white; border:none; padding:0.35rem 0.7rem; border-radius:var(--radius-sm); font-weight:600; text-decoration:none; font-size:0.75rem; box-shadow:0 2px 8px rgba(37,211,102,0.25);">
+                                💬 WhatsApp
+                            </a>
+                        ` : `<div style="margin-top:0.4rem; font-size:0.7rem; color:var(--text-faint);">📱 Sem número</div>`}
+                    </div>
+                </div>
+            `;
+            document.getElementById('checkoutChildInfo').innerHTML = html;
+            pendingCheckoutData = { checkinId };
+            document.getElementById('checkoutConfirmModal').style.display = 'flex';
+        });
+}
+
+        function closeCheckoutConfirmModal() {
+            document.getElementById('checkoutConfirmModal').style.display = 'none';
+            pendingCheckoutData = null;
+        }
+
+        async function confirmCheckout() {
+            if (!pendingCheckoutData) return;
+            const { checkinId } = pendingCheckoutData;
+            await supabaseClient.from('kids_check_ins').update({ checked_out_at: new Date().toISOString() }).eq('id', checkinId);
+            const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).single();
+            if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
+            enviarPush({ event: 'checkout', checkinId: checkinId });
+            showToast('Check‑out realizado com sucesso!', 'success');
+            document.getElementById('scanResult').innerHTML = `✅ Check‑out confirmado!`;
+            closeCheckoutConfirmModal();
+            await loadPresentList();
+        }
+
+
+
+        // ========== MODAL RELATÓRIOS ==========
+        let relTipoAtual = 'sessao';
+        
+        function abrirModalRelatorio() {
+            // Carregar sessões para o select
+            carregarSessoesSelect();
+            carregarCriancasSelect();
+            // Definir mês atual no input
+            const hoje = new Date();
+            document.getElementById('relMesInput').value = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
+            document.getElementById('relAnoInput').value = hoje.getFullYear();
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+        
+        function fecharModalRelatorio() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+        
+        function trocarAbaRelatorio(tipo) {
+            relTipoAtual = tipo;
+            // Atualizar abas
+            document.querySelectorAll('.tab-relatorio').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab-relatorio[data-tipo="${tipo}"]`).classList.add('active');
+            // Mostrar conteúdo correspondente
+            document.querySelectorAll('.aba-relatorio').forEach(div => div.style.display = 'none');
+            document.getElementById(`aba-${tipo}`).style.display = 'block';
+        }
+        
+        async function carregarSessoesSelect() {
+            const { data } = await supabaseClient
+                .from('kids_sessions')
+                .select('id, name, session_date')
+                .order('session_date', { ascending: false });
+            const select = document.getElementById('relSessaoSelect');
+            select.innerHTML = '';
+            if (data && data.length) {
+                data.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = `${s.name}`;
+                    select.appendChild(opt);
+                });
+                // Selecionar a sessão atual se existir
+                if (currentSessionId) select.value = currentSessionId;
+            } else {
+                select.innerHTML = '<option value="">Nenhuma sessão</option>';
+            }
+        }
+        
+        // ========== GERAR PDF CONFORME TIPO ==========
+        async function gerarPDF(tipo) {
+            if (tipo === 'sessao') {
+                await gerarPDFSessao();
+            } else if (tipo === 'mes') {
+                await gerarPDFMes();
+            } else if (tipo === 'faltas') {
+                await gerarPDFFaltas();
+            } else if (tipo === 'crianca') {
+                await gerarPDFCrianca();
+            }
+        }
+        
+        // ---------- RELATÓRIO POR SESSÃO ----------
+        async function gerarPDFSessao() {
+            const sessaoId = document.getElementById('relSessaoSelect').value;
+            const salaFiltro = document.getElementById('relSalaSelect').value;
+            if (!sessaoId) {
+                showToast('Selecione uma sessão.', 'error');
+                return;
+            }
+        
+            // Buscar dados da sessão
+            const { data: sessao } = await supabaseClient
+                .from('kids_sessions')
+                .select('name, session_date')
+                .eq('id', sessaoId)
+                .single();
+        
+            // Buscar check-ins da sessão
+            let query = supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(id, name, birth_date, allergies, is_visitor)')
+                .eq('session_id', sessaoId);
+            if (salaFiltro !== 'todos') {
+                query = query.eq('room', salaFiltro);
+            }
+            const { data: checkins } = await query;
+        
+            // Calcular totais por sala
+            const totaisPorSala = {};
+            checkins?.forEach(c => {
+                const room = c.room || 'todos';
+                totaisPorSala[room] = (totaisPorSala[room] || 0) + 1;
+            });
+            const totalGeral = checkins?.length || 0;
+        
+            // Montar HTML do PDF
+            const html = `
+                <div class="report-pdf" id="reportContent">
+                    <div class="header">
+                        <img src="logo.png" alt="Logo">
+                        <h1>Relatório de Presenças</h1>
+                        <p>${sessao?.name || 'Sessão'}</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number">${totalGeral}</div><div class="stat-label">Total de crianças</div></div>
+                        ${Object.entries(totaisPorSala).map(([sala, qtd]) => `
+                            <div class="stat-card"><div class="stat-number">${qtd}</div><div class="stat-label">Sala ${sala}</div></div>
+                        `).join('')}
+                    </div>
+                    <table>
+                        <thead><tr><th>Nome</th><th>Idade</th><th>Alergias</th><th>Sala</th><th>Check-in</th><th>Check-out</th></tr></thead>
+                        <tbody>
+                            ${(checkins || []).map(c => {
+                                const idade = c.child.birth_date ? `${calcularIdade(c.child.birth_date)} anos` : '';
+                                const alergias = c.child.allergies || 'Nenhuma';
+                                const checkin = new Date(c.checked_in_at).toLocaleString('pt-BR');
+                                const checkout = c.checked_out_at ? new Date(c.checked_out_at).toLocaleString('pt-BR') : 'Ainda presente';
+                                return `<tr>
+                                    <td>${escapeHtml(c.child.name)}${c.child.is_visitor ? ' <span style="font-size:0.75em;color:#b9824f;">(visitante)</span>' : ''}</td>
+                                    <td>${idade}</td>
+                                    <td>${escapeHtml(alergias)}</td>
+                                    <td>${c.room || 'Não definida'}</td>
+                                    <td>${checkin}</td>
+                                    <td>${checkout}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    <div class="espaco-lideres">
+                        <h4 style="font-size: 0.7rem;"> Babys </h4>
+                         ${[1].map(i => `<div style="font-size: 11px; margin:3px 0;"><span>Líder 1: _____________________________ Líder 2: _____________________________ Auxiliar: _____________________________ </span></div>`).join('')}
+                        <h4 style="font-size: 0.7rem;"> Kids</h4>
+                         ${[2].map(i => `<div style="font-size: 11px; margin:3px 0;"><span>Líder 1: _____________________________ Líder 2: _____________________________ Auxiliar: _____________________________ </span></div>`).join('')}
+                         <h4 style="font-size: 0.7rem;"> Juvenis</h4>
+                         ${[3].map(i => `<div style="font-size: 11px; margin:3px 0;"><span>Líder 1: _____________________________ Líder 2: _____________________________ Auxiliar: _____________________________ </span></div>`).join('')}
+                    </div>     
+                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                </div>
+            `;
+        
+            gerarPDFComHtml(html, `DK_${sessao?.name || 'sessao'}`);
+        }
+        
+        // ---------- RELATÓRIO POR MÊS ----------
+        async function gerarPDFMes() {
+            const mesAno = document.getElementById('relMesInput').value; // formato "YYYY-MM"
+            const salaFiltro = document.getElementById('relSalaMesSelect').value;
+            if (!mesAno) {
+                showToast('Selecione um mês.', 'error');
+                return;
+            }
+            const [ano, mes] = mesAno.split('-').map(Number);
+            const dataInicio = new Date(ano, mes-1, 1);
+            const dataFim = new Date(ano, mes, 0); // último dia do mês
+        
+            // Buscar check-ins do mês
+            let query = supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(id, name, birth_date, allergies, is_visitor)')
+                .gte('checked_in_at', dataInicio.toISOString())
+                .lte('checked_in_at', dataFim.toISOString());
+            if (salaFiltro !== 'todos') {
+                query = query.eq('room', salaFiltro);
+            }
+            const { data: allCheckinsMes } = await query;
+            // Visitantes não entram no relatório de frequência mensal
+            const checkins = allCheckinsMes?.filter(c => !c.child.is_visitor) || [];
+        
+            // Agrupar por criança
+            const freqMap = {};
+            checkins?.forEach(c => {
+                const childId = c.child.id;
+                if (!freqMap[childId]) {
+                    freqMap[childId] = {
+                        nome: c.child.name,
+                        idade: c.child.birth_date ? `${calcularIdade(c.child.birth_date)} anos` : '',
+                        alergias: c.child.allergies || 'Nenhuma',
+                        presencas: 0
+                    };
+                }
+                freqMap[childId].presencas++;
+            });
+        
+            // Ordenar por nome
+            const lista = Object.values(freqMap).sort((a,b) => a.nome.localeCompare(b.nome));
+        
+            const totalCriancas = lista.length;
+        
+            const html = `
+                <div class="report-pdf" id="reportContent">
+                    <div class="header">
+                        <img src="logo.png" alt="Logo">
+                        <h1>Relatório Mensal</h1>
+                        <p>${new Date(ano, mes-1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })} - ${salaFiltro === 'todos' ? 'Todas as salas' : `Sala ${salaFiltro}`}</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number">${totalCriancas}</div><div class="stat-label">Total de crianças</div></div>
+                        <div class="stat-card"><div class="stat-number">${checkins?.length || 0}</div><div class="stat-label">Total de presenças</div></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Nome</th><th>Idade</th><th>Alergias</th><th>Presenças</th></tr></thead>
+                        <tbody>
+                            ${lista.map(c => `
+                                <tr>
+                                    <td>${escapeHtml(c.nome)}</td>
+                                    <td>${c.idade}</td>
+                                    <td>${escapeHtml(c.alergias)}</td>
+                                    <td>${c.presencas}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                </div>
+            `;
+        
+            gerarPDFComHtml(html, `DK_Mes_${mesAno}`);
+        }
+        
+        // ---------- RELATÓRIO DE FALTAS ----------
+        async function gerarPDFFaltas() {
+            const ano = parseInt(document.getElementById('relAnoInput').value);
+            const salaFiltro = document.getElementById('relSalaFaltasSelect').value;
+            if (!ano || isNaN(ano)) {
+                showToast('Informe um ano válido.', 'error');
+                return;
+            }
+        
+            // Buscar todas as sessões no ano
+            const { data: sessoes } = await supabaseClient
+                .from('kids_sessions')
+                .select('id')
+                .gte('session_date', `${ano}-01-01`)
+                .lte('session_date', `${ano}-12-31`);
+            const totalSessoes = sessoes?.length || 0;
+        
+            if (totalSessoes === 0) {
+                showToast('Nenhuma sessão encontrada para este ano.', 'error');
+                return;
+            }
+        
+            // Buscar check-ins do ano
+            let query = supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(id, name, birth_date, allergies, is_visitor)')
+                .gte('checked_in_at', `${ano}-01-01`)
+                .lte('checked_in_at', `${ano}-12-31`);
+            if (salaFiltro !== 'todos') {
+                query = query.eq('room', salaFiltro);
+            }
+            const { data: allCheckinsAno } = await query;
+            // Visitantes não entram no relatório de faltas
+            const checkins = allCheckinsAno?.filter(c => !c.child.is_visitor) || [];
+        
+            // Agrupar por criança
+            const freqMap = {};
+            checkins?.forEach(c => {
+                const childId = c.child.id;
+                if (!freqMap[childId]) {
+                    freqMap[childId] = {
+                        nome: c.child.name,
+                        idade: c.child.birth_date ? `${calcularIdade(c.child.birth_date)} anos` : '',
+                        alergias: c.child.allergies || 'Nenhuma',
+                        presencas: 0
+                    };
+                }
+                freqMap[childId].presencas++;
+            });
+        
+            // Calcular faltas = totalSessoes - presencas
+            const lista = Object.values(freqMap).map(c => ({
+                ...c,
+                faltas: totalSessoes - c.presencas
+            })).sort((a,b) => b.faltas - a.faltas); // ranking por mais faltas
+        
+            // Filtrar apenas quem tem pelo menos 1 falta (ou pode mostrar todos)
+            const comFaltas = lista.filter(c => c.faltas > 0);
+        
+            const html = `
+                <div class="report-pdf" id="reportContent">
+                    <div class="header">
+                        <img src="logo.png" alt="Logo">
+                        <h1>Relatório de Faltas</h1>
+                        <p>Ano ${ano} - ${salaFiltro === 'todos' ? 'Todas as salas' : `Sala ${salaFiltro}`}</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number">${comFaltas.length}</div><div class="stat-label">Crianças com faltas</div></div>
+                        <div class="stat-card"><div class="stat-number">${totalSessoes}</div><div class="stat-label">Total de sessões</div></div>
+                        <div class="stat-card"><div class="stat-number">${checkins?.length || 0}</div><div class="stat-label">Total de presenças</div></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>#</th><th>Nome</th><th>Idade</th><th>Presenças</th><th>Faltas</th></tr></thead>
+                        <tbody>
+                            ${comFaltas.map((c, idx) => `
+                                <tr>
+                                    <td>${idx+1}</td>
+                                    <td>${escapeHtml(c.nome)}</td>
+                                    <td>${c.idade}</td>
+                                    <td>${c.presencas}</td>
+                                    <td style="color:${c.faltas > 5 ? 'var(--danger)' : 'var(--text-main)'}">${c.faltas}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                </div>
+            `;
+        
+            gerarPDFComHtml(html, `DK_Faltas_${ano}`);
+        }
+
+        async function carregarCriancasSelect() {
+            const select = document.getElementById('relCriancaSelect');
+            select.innerHTML = '<option value="">Carregando...</option>';
+            const { data, error } = await supabaseClient
+                .from('kids_children')
+                .select('id, name')
+                .order('name');
+            if (error) {
+                select.innerHTML = '<option value="">Erro ao carregar</option>';
+                return;
+            }
+            select.innerHTML = '<option value="">Selecione uma criança</option>';
+            data.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+            });
+        }
+
+        async function gerarPDFCrianca() {
+            const childId = document.getElementById('relCriancaSelect').value;
+            if (!childId) {
+                showToast('Selecione uma criança.', 'error');
+                return;
+            }
+            const dataInicio = document.getElementById('relCriancaDataInicio').value;
+            const dataFim = document.getElementById('relCriancaDataFim').value;
+        
+            // Buscar dados da criança
+            const { data: child, error: childError } = await supabaseClient
+                .from('kids_children')
+                .select('*, family:family_id(*)')
+                .eq('id', childId)
+                .single();
+            if (childError || !child) {
+                showToast('Erro ao buscar criança.', 'error');
+                return;
+            }
+        
+            // Buscar check-ins da criança
+            let query = supabaseClient
+                .from('kids_check_ins')
+                .select('*, session:session_id(name, session_date)')
+                .eq('child_id', childId)
+                .order('checked_in_at', { ascending: false });
+            if (dataInicio) {
+                query = query.gte('checked_in_at', `${dataInicio}T00:00:00`);
+            }
+            if (dataFim) {
+                query = query.lte('checked_in_at', `${dataFim}T23:59:59`);
+            }
+            const { data: checkins, error: checkError } = await query;
+        
+            const totalRegistros = checkins?.length || 0;
+            const presentes = checkins?.filter(c => !c.checked_out_at).length || 0;
+        
+            const family = child.family || {};
+            const html = `
+                <div class="report-pdf" id="reportContent">
+                    <div class="header">
+                        <img src="logo.png" alt="Logo">
+                        <h1>Relatório Individual</h1>
+                        <p>${escapeHtml(child.name)} ${child.birth_date ? `- ${formatDate(child.birth_date)}` : ''}</p>
+                        ${family.father_name || family.mother_name ? `<p style="font-size:0.8rem;">Responsáveis: ${family.father_name || ''} ${family.mother_name ? `& ${family.mother_name}` : ''}</p>` : ''}
+                        ${dataInicio && dataFim ? `<p>Período: ${new Date(dataInicio).toLocaleDateString('pt-BR')} a ${new Date(dataFim).toLocaleDateString('pt-BR')}</p>` : '<p>Todos os registros</p>'}
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number">${totalRegistros}</div><div class="stat-label">Total de check-ins</div></div>
+                        <div class="stat-card"><div class="stat-number">${presentes}</div><div class="stat-label">Ainda presente</div></div>
+                        <div class="stat-card"><div class="stat-number">${totalRegistros - presentes}</div><div class="stat-label">Finalizados</div></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Data/Hora</th><th>Sessão</th><th>Check-in</th><th>Check-out</th><th>Sala</th></tr></thead>
+                        <tbody>
+                            ${(checkins || []).map(c => `
+                                <tr>
+                                    <td>${new Date(c.checked_in_at).toLocaleDateString('pt-BR')}</td>
+                                    <td>${c.session?.name || 'Sessão'}</td>
+                                    <td>${new Date(c.checked_in_at).toLocaleString('pt-BR')}</td>
+                                    <td>${c.checked_out_at ? new Date(c.checked_out_at).toLocaleString('pt-BR') : 'Ainda presente'}</td>
+                                    <td>${c.room || 'Não definida'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                </div>
+            `;
+            gerarPDFComHtml(html, `DK_${child.name}`);
+        }
+        
+        // ---------- FUNÇÃO AUXILIAR PARA GERAR PDF ----------
+        function gerarPDFComHtml(htmlContent, nomeArquivo = 'relatorio') {
+            // Criar um elemento temporário para o conteúdo
+            const container = document.createElement('div');
+            container.innerHTML = htmlContent;
+            const element = container.firstElementChild;
+        
+            // Gerar PDF com html2pdf
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `${nomeArquivo}.pdf`,
+                html2canvas: { scale: 2, letterRendering: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+        
+            // Usar o elemento encontrado
+            html2pdf().from(element).set(opt).save().then(() => {
+                showToast('PDF gerado com sucesso!', 'success');
+            }).catch(() => {
+                showToast('Erro ao gerar PDF', 'error');
+            });
+        
+            // Fechar modal
+            fecharModalRelatorio();
+        }
+        
+
+        // ========== UTILITÁRIOS ==========
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+        async function logout() { window.location.href = "index.html?t=" + Date.now(); }
+
+        // ========== AUTOMATIZAR SESSÃO DO DOMINGO ==========
+        function getProximoDomingo() {
+            const hoje = new Date();
+            const dia = hoje.getDay(); // 0 = domingo
+            const diff = dia === 0 ? 0 : 7 - dia;
+            const proximoDomingo = new Date(hoje);
+            proximoDomingo.setDate(hoje.getDate() + diff);
+            // Ajustar para meia-noite (para comparar apenas a data)
+            proximoDomingo.setHours(0, 0, 0, 0);
+            return proximoDomingo;
+        }
+        
+        async function getOrCreateSundaySession() {
+            const dataDomingo = getProximoDomingo();
+            const dataString = dataDomingo.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+            // 1) Verificar se já existe uma sessão ativa para este domingo
+            const { data: existente, error: buscaError } = await supabaseClient
+                .from('kids_sessions')
+                .select('id, name, is_active')
+                .eq('session_date', dataString)
+                .eq('is_active', true)
+                .maybeSingle();
+        
+            if (buscaError) {
+                console.error('Erro ao buscar sessão do domingo:', buscaError);
+                return null;
+            }
+        
+            if (existente) {
+                // Já existe – usar essa
+                return existente.id;
+            }
+        
+            // 2) Não existe → criar nova sessão
+            // Desativar todas as outras sessões ativas (para não ter duas ativas)
+            const { error: desativarError } = await supabaseClient
+                .from('kids_sessions')
+                .update({ is_active: false })
+                .eq('is_active', true);
+        
+            if (desativarError) {
+                console.error('Erro ao desativar sessões antigas:', desativarError);
+            }
+        
+            // Criar a nova sessão
+            const nomeSessao = `Culto Kids - ${dataString.split('-').reverse().join('/')}`;
+            const { data: nova, error: criarError } = await supabaseClient
+                .from('kids_sessions')
+                .insert({
+                    name: nomeSessao,
+                    session_date: dataString,
+                    is_active: true,
+                    // start_time e end_time podem ficar nulos
+                })
+                .select()
+                .single();
+        
+            if (criarError) {
+                console.error('Erro ao criar sessão do domingo:', criarError);
+                return null;
+            }
+        
+            return nova.id;
+        }
+
+        init();
+    </script>
+
+</body>
+</html>

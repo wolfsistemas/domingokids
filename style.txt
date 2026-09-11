@@ -1,0 +1,40 @@
+/* --- PALETA CLEAN & MODERN (VIDEIRA) --- */
+:root {
+  --primary: #800020;      /* Vinho / Bordô */
+  --accent: #D4AF37;       /* Dourado */
+  --bg-body: #f4f6f8;      
+  --card-bg: #ffffff;      
+  --input-bg: #f9f9f9;      
+  --border-color: #e0e0e0;  
+  --text-main: #333333;    
+  --text-light: #666666;    
+  --success-bg: #e6f4ea;    
+  --success-text: #1e8e3e;  
+  --danger-text: #c5221f;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--bg-body) !important; 
+    color: var(--text-main); 
+    overflow-x: hidden; 
+}
+
+/* Scrollbar Bonita */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+.hidden { display: none !important; }
+
+/* Animações Globais */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.container { animation: fadeIn 0.5s ease-out; }

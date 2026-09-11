@@ -1,0 +1,1512 @@
+<!-- versão com crachá em  QR code // VERSÃO COM CARA ANTIGA, AZUL ESCURO-->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kids Checkin | Equipe</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            padding-bottom: 5rem;
+            min-height: 100vh;
+        }
+
+        /* Header moderno */
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 1.2rem 2rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header-left h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .header-left p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 0.2rem;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .btn-header {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-left: 4px solid #3b82f6;
+            padding-left: 0.8rem;
+        }
+
+        /* Sessão atual */
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .session-selector {
+            flex: 1;
+            min-width: 200px;
+        }
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* Scanner */
+        .scanner-area {
+            text-align: center;
+        }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 1.2rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .scanner-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .scan-result {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            text-align: center;
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        /* Abas */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .tab {
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            background: #f1f5f9;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+        }
+        .tab:hover:not(.active) {
+            background: #e2e8f0;
+        }
+
+        /* Lista de presentes */
+        .present-item {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: 0.2s;
+            border-left: 4px solid #10b981;
+        }
+        .present-item:hover {
+            background: #f1f5f9;
+            transform: translateX(4px);
+        }
+        .visitant-item {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .present-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .present-name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1rem;
+        }
+        .present-time {
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+        .present-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .btn-icon {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .btn-icon:hover {
+            background: #f1f5f9;
+            transform: scale(1.02);
+        }
+
+        /* FAB - visitante */
+        .fab-visitante {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 8px 20px rgba(245,158,11,0.4);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        .fab-visitante:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 28px rgba(245,158,11,0.5);
+        }
+
+        /* Modais modernos */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 550px;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalFadeIn 0.2s ease;
+        }
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #475569;
+        }
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: #0f172a;
+            padding-right: 2rem;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            margin: 0.4rem 0 1rem;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: #1e293b;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 3rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+
+        /* Room list */
+        .room-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .room-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .room-item img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Badge */
+        .badge {
+            background: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+       
+        /* Responsivo */
+        @media (max-width: 640px) {
+            .container { padding: 0 1rem; }
+            .header { padding: 1rem; flex-direction: column; text-align: center; }
+            .header-buttons { justify-content: center; }
+            .present-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .present-actions { align-self: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h2>👥 Equipe Ministerial</h2>
+            <p>Gestão de crianças, check-in e salas</p>
+        </div>
+        <div class="header-buttons">
+            <button class="btn-header" onclick="gerarRelatorio()">📊 Relatório</button>
+            <button class="btn-header" onclick="refreshPresentList()">🔄 Recarregar</button>
+            <button class="btn-header" onclick="logout()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Sessão atual -->
+        <div class="card">
+            <div class="session-header">
+                <div class="session-selector">
+                    <select id="sessionSelect" onchange="changeSession()"></select>
+                </div>
+                <button class="btn-secondary" onclick="openSessionModal()">➕ Nova Sessão</button>
+            </div>
+        </div>       
+
+        <!-- Scanner QR -->
+        <div class="card">
+            <div class="card-title">
+                <span>📷</span> Escanear QR
+            </div>
+            <div class="scanner-area">
+                <div id="reader"></div>
+                <div class="scanner-buttons">
+                    <button class="btn-primary" id="startScannerBtn" onclick="startScanner()">📸 Abrir Câmera</button>
+                    <button class="btn-secondary" id="stopScannerBtn" onclick="stopScanner()" style="display:none;">⏹️ Parar</button>
+                </div>
+                <select id="cameraSelect" style="display:none; max-width: 320px; margin: 0.6rem auto 0;"></select>
+                <div id="scanResult" class="scan-result"></div>
+            </div>
+        </div>        
+
+        <!-- Salas e lista de presentes -->
+        <div class="card">
+            <div class="tabs" id="tabsContainer">
+                <div class="tab active" data-room="todos">👶 Todos</div>
+                <div class="tab" data-room="Kids">🍼 Kids</div>
+                <div class="tab" data-room="Babys">🧸 Babys</div>
+                <div class="tab" data-room="Juvenis">⚡ Juvenis</div>
+            </div>
+            <div id="presentList">Carregando...</div>
+        </div>
+    </div>
+
+    <!-- FAB para visitante -->
+    <div class="fab-visitante" onclick="openVisitanteModal()">➕📝</div>
+
+    <!-- Modal visitante -->
+    <div id="visitanteModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-title">📝 Visitante rápido</div>
+            <input type="text" id="visitantName" placeholder="Nome da criança">
+            <input type="text" id="respName" placeholder="Responsável">
+            <input type="tel" id="respPhone" placeholder="Telefone (opcional)">
+            <button class="btn-primary" onclick="registerVisitant()" style="width:100%;">Registrar e fazer check-in</button>
+        </div>
+    </div>
+
+    <!-- Modal nova sessão -->
+    <div id="sessionModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSessionModal()">&times;</button>
+            <div class="modal-title">📅 Nova Sessão</div>
+            <input type="text" id="sessionName" placeholder="Nome (ex: Culto Domingo)">
+            <input type="date" id="sessionDate">
+            <input type="time" id="sessionStart" placeholder="Início">
+            <input type="time" id="sessionEnd" placeholder="Término">
+            <button class="btn-primary" onclick="createSession()">Criar</button>
+        </div>
+    </div>
+
+    <!-- Modal detalhes da criança -->
+    <div id="childDetailsModal" class="modal">
+        <div class="modal-content" id="childDetailsContent"></div>
+    </div>
+
+    <!-- Modal mover para sala -->
+    <div id="roomModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeRoomModal()">&times;</button>
+            <div class="modal-title" id="roomModalTitle">Mover para sala</div>
+            <div id="roomChildrenList" class="room-list"></div>
+            <button class="btn-primary" onclick="saveRoomAssignments()" style="margin-top:1rem;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- Modal para selecionar sala antes do check-in -->
+    <div id="selectRoomModal" class="modal">
+        <!-- dentro do modal-content, após o div roomChildInfo, antes dos botões de sala -->
+        
+        
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" onclick="closeSelectRoomModal()">&times;</button>
+            <div class="modal-title" style="margin-bottom: 0.5rem;">🏷️ Check-in</div>            
+            <div id="roomChildInfo" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 1rem;">                
+          </div>
+        
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">                       
+                <button class="room-option" data-room="todos" style="background: #64748b; color: white; border: none; padding: 0.7rem; border-radius: 2rem; font-weight: 500; cursor: pointer;">👶 Todos</button>
+                <button class="room-option" data-room="Kids" style="background: #3b82f6; color: white; border: none; padding: 0.7rem; border-radius: 2rem; font-weight: 500; cursor: pointer;">🍼 Kids</button>
+                <button class="room-option" data-room="Babys" style="background: #f59e0b; color: white; border: none; padding: 0.7rem; border-radius: 2rem; font-weight: 500; cursor: pointer;">🧸 Babys</button>
+                <button class="room-option" data-room="Juvenis" style="background: #8b5cf6; color: white; border: none; padding: 0.7rem; border-radius: 2rem; font-weight: 500; cursor: pointer;">⚡ Juvenis</button>
+            </div>                         
+            <!--<button class="btn-secondary" onclick="closeSelectRoomModal()" style="margin-top: 1rem;">Cancelar</button> -->                      
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de checkout -->
+    <div id="checkoutConfirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="modal-close" onclick="closeCheckoutConfirmModal()">&times;</button>
+            <div class="modal-title" style="margin-bottom: 0.5rem;">🔔 Confirmar Check-out</div>
+            <div id="checkoutChildInfo" style="margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 1rem;">
+                <!-- Dados da criança serão preenchidos -->
+            </div>
+            <div style="display: flex; gap: 1rem; flex-direction: column;">
+                <button id="confirmCheckoutBtn" class="btn-primary" onclick="confirmCheckout()" style="background: #ef4444;">✅ Confirmar Check-out</button>
+                <button class="btn-secondary" onclick="closeCheckoutConfirmModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área para impressão -->
+    <div id="printArea" style="display: none;"></div>
+    <div id="reportPrintArea" style="display: none;"></div>
+
+    <script>
+
+        // ========== CONFIGURAÇÃO ==========
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        // ========== VARIÁVEIS ==========
+        let currentStaffId = null, currentSessionId = null, html5QrCode = null, scannerActive = false;
+        let autoRestartScanner = null;
+        let currentRoomFilter = 'todos';
+        let pendingRoom = null;
+        let childrenForRoom = [];
+
+        // ========== TOAST ==========
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+            toast.offsetHeight;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+        async function init() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = 'index.html'; return; }
+            currentStaffId = user.id;
+            await loadSessions();
+            setupTabs();
+            await loadCameras();   // 🔹 ADICIONAR: já popula o seletor de câmeras ao abrir a página
+
+            // 🔹 ADICIONAR: salva a escolha da câmera pra lembrar da próxima vez
+            document.getElementById('cameraSelect').addEventListener('change', (e) => {
+                localStorage.setItem('kidsCheckinCameraId', e.target.value);
+            });
+
+            document.querySelectorAll('.room-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const room = btn.dataset.room;
+                    confirmCheckinWithRoom(room);
+                });
+            });
+        }
+
+        async function loadSessions() {
+            const { data } = await supabaseClient.from('kids_sessions').select('id, name, session_date, is_active').order('session_date', { ascending: false });
+            const select = document.getElementById('sessionSelect');
+            if (data?.length) {
+                select.innerHTML = data.map(s => `<option value="${s.id}" ${s.is_active ? 'selected' : ''}>${s.name} (${new Date(s.session_date).toLocaleDateString()})</option>`).join('');
+                const active = data.find(s => s.is_active);
+                currentSessionId = active ? active.id : data[0].id;
+                select.value = currentSessionId;
+                await loadPresentList();
+            } else {
+                select.innerHTML = '<option>Nenhuma sessão. Crie uma.</option>';
+            }
+        }
+
+        async function changeSession() {
+            currentSessionId = document.getElementById('sessionSelect').value;
+            await loadPresentList();
+            showToast('Sessão alterada', 'info');
+        }
+
+        function refreshPresentList() {
+            loadPresentList();
+            showToast('Lista atualizada', 'success');
+        }
+
+        function setupTabs() {
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', async () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentRoomFilter = tab.dataset.room;
+                await loadPresentList();
+            });
+        });
+    }
+
+        // ========== SCANNER ==========
+        /*async function startScanner() {
+            if (scannerActive) return;
+            html5QrCode = new Html5Qrcode("reader");
+            try {
+                await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess, onScanError);
+                scannerActive = true;
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'inline-block';
+                showToast('Câmera ativada', 'success');
+            } catch(e) { showToast('Erro ao acessar câmera: '+e, 'error'); }
+        }*/
+
+        let availableCameras = [];
+
+        // Busca a lista real de câmeras do aparelho (pede permissão se ainda não pediu)
+        async function loadCameras() {
+            try {
+                availableCameras = await Html5Qrcode.getCameras();
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = availableCameras
+                    .map(cam => `<option value="${cam.id}">${cam.label || cam.id}</option>`)
+                    .join('');
+                select.style.display = availableCameras.length > 1 ? 'block' : 'none';
+
+                // Se já tinha uma câmera salva de uma escolha anterior, seleciona ela
+                const savedCameraId = localStorage.getItem('kidsCheckinCameraId');
+                if (savedCameraId && availableCameras.some(c => c.id === savedCameraId)) {
+                    select.value = savedCameraId;
+                }
+            } catch (e) {
+                console.log('Não foi possível listar câmeras', e);
+            }
+        }
+
+        async function startScanner() {
+            if (scannerActive) return;
+            html5QrCode = new Html5Qrcode("reader");
+
+            if (!availableCameras.length) await loadCameras();
+
+            const select = document.getElementById('cameraSelect');
+            const chosenCameraId = select.value || (availableCameras[0] && availableCameras[0].id);
+
+            try {
+                const cameraConfig = chosenCameraId
+                    ? { deviceId: { exact: chosenCameraId } }  // câmera específica escolhida
+                    : { facingMode: "environment" };            // fallback caso não consiga listar
+
+                await html5QrCode.start(cameraConfig, { fps: 10, qrbox: 250 }, onScanSuccess, onScanError);
+                scannerActive = true;
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'inline-block';
+                showToast('Câmera ativada', 'success');
+            } catch(e) { showToast('Erro ao acessar câmera: '+e, 'error'); }
+        }
+
+        function stopScanner() {
+            if (html5QrCode && scannerActive) {
+                html5QrCode.stop();
+                scannerActive = false;
+                document.getElementById('startScannerBtn').style.display = 'inline-block';
+                document.getElementById('stopScannerBtn').style.display = 'none';
+                showToast('Câmera desativada', 'info');
+            }
+            if (autoRestartScanner) clearTimeout(autoRestartScanner);
+        }
+
+        /*async function onScanSuccess(decodedText) {
+            stopScanner();
+            await processToken(decodedText);
+            autoRestartScanner = setTimeout(() => startScanner(), 3000);
+        }*/
+
+        async function onScanSuccess(decodedText) {
+            stopScanner(); // para a câmera após a leitura
+            await processToken(decodedText);
+            // A câmera NÃO reinicia automaticamente – usuário precisa clicar no botão novamente
+        }
+
+        function onScanError(err) { console.log(err); }
+
+       // Variável para armazenar dados pendentes do check-in
+let pendingCheckinData = null;
+
+async function processToken(token) {
+        const { data: tokenData, error: tokenError } = await supabaseClient
+        .from('kids_temporary_tokens')
+        .select('*, child:child_id(id, name, allergies, birth_date)')
+        .eq('token', token)
+        .single();
+    if (tokenError || !tokenData) {
+        document.getElementById('scanResult').innerHTML = '❌ QR inválido.';
+        showToast('QR inválido', 'error');
+        return;
+    }
+    if (new Date(tokenData.expires_at) < new Date()) {
+        document.getElementById('scanResult').innerHTML = '❌ QR expirado.';
+        showToast('QR expirado', 'error');
+        return;
+    }
+
+    const childId = tokenData.child_id;
+    const childName = tokenData.child?.name || 'Criança';
+    const allergies = tokenData.child?.allergies || '';
+
+    // Verificar se já existe check-in ativo
+    const { data: activeCheckin } = await supabaseClient
+        .from('kids_check_ins')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('session_id', currentSessionId)
+        .is('checked_out_at', null)
+        .maybeSingle();
+
+    // Se existe, faz checkout
+            // Se existe, faz checkout (agora com confirmação)
+        if (activeCheckin) {
+            // Abrir modal de confirmação com os dados da criança
+            openCheckoutConfirmModal(childId, activeCheckin.id);
+            document.getElementById('scanResult').innerHTML = `🔔 Escaneado: ${childName}`;
+            return;
+        }
+
+    // Prepara dados para o modal de seleção de sala
+    // Prepara dados para o modal de seleção de sala
+        const birthDate = tokenData.child?.birth_date || null;
+        pendingCheckinData = {
+            tokenId: tokenData.id,
+            childId: childId,
+            childName: childName,
+            allergies: allergies,
+            birthDate: birthDate,
+            tokenValue: token
+        };
+        openSelectRoomModal(childName, allergies, birthDate);
+}
+
+        function calcularIdade(birthDateStr) {
+            const birth = new Date(birthDateStr);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            return age;
+        }
+
+function openSelectRoomModal(childName, allergies, birthDate) {
+    const infoDiv = document.getElementById('roomChildInfo');
+    let idadeHtml = '';
+    if (birthDate) {
+        const idade = calcularIdade(birthDate);
+        idadeHtml = `<div style="color: #475569; font-size: 0.9rem;">📅 Idade: ${idade} anos</div>`;
+    }
+    infoDiv.innerHTML = `
+        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.3rem;">${escapeHtml(childName)}</div>
+        ${idadeHtml}
+        ${allergies ? `<div class="badge" style="background:#fee2e2; color:#b91c1c; margin-top:0.3rem;">⚠️ Alergia: ${escapeHtml(allergies)}</div>` : '<div style="color:#64748b;">Sem alergias</div>'}
+    `;
+    document.getElementById('selectRoomModal').style.display = 'flex';
+}
+
+function closeSelectRoomModal() {
+    document.getElementById('selectRoomModal').style.display = 'none';
+    pendingCheckinData = null;
+}
+        
+async function confirmCheckinWithRoom(room) {
+    if (!pendingCheckinData) return;
+    const { tokenId, childId, childName, allergies, tokenValue, birthDate } = pendingCheckinData;
+    const badgeNumber = null; // não usamos mais crachá
+
+    // Buscar dados da criança e da família para imprimir na etiqueta
+    const { data: childData, error: childError } = await supabaseClient
+        .from('kids_children')
+        .select('*, family:family_id(*)')
+        .eq('id', childId)
+        .single();
+
+    if (childError || !childData) {
+        showToast('Erro ao buscar dados da criança', 'error');
+        return;
+    }
+
+    const family = childData.family || {};
+
+    const { data: newCheckin, error: insertError } = await supabaseClient
+        .from('kids_check_ins')
+        .insert({
+            child_id: childId,
+            session_id: currentSessionId,
+            checked_in_by: currentStaffId,
+            token_id: tokenId,
+            room: room,
+            badge_number: badgeNumber
+        })
+        .select()
+        .single();
+
+    if (insertError) {
+        showToast('Erro no check-in', 'error');
+        document.getElementById('scanResult').innerHTML = '❌ Erro no check-in.';
+    } else {
+        const roomDisplay = room === 'todos' ? 'Todos' : room;
+        document.getElementById('scanResult').innerHTML = `✅ Check-in: ${childName} (${roomDisplay})`;
+        showToast(`Check-in: ${childName} - Sala ${roomDisplay}`, 'success');
+        await loadPresentList();
+
+        // 🔹 IMPRIMIR ETIQUETA AUTOMATICAMENTE
+        // Calcular idade
+        let idade = '';
+        if (birthDate) {
+            const idadeNum = calcularIdade(birthDate);
+            idade = `${idadeNum} anos`;
+        }
+        // Buscar telefones da família
+        const fatherPhone = family.father_phone || 'Não informado';
+        const motherPhone = family.mother_phone || 'Não informado';
+
+        // Chamar impressão com os dados completos
+        printLabel(
+            tokenValue,           // QR token
+            childName,            // Nome
+            allergies,            // Alergias
+            idade,                // Idade
+            fatherPhone,          // Telefone pai
+            motherPhone,          // Telefone mãe
+            newCheckin.id         // checkin_id (não usado na etiqueta, mas mantido)
+        );
+    }
+    closeSelectRoomModal();
+}
+        
+
+/*async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId) {
+    // 1) Gera o QR Code num container temporário anexado ao body
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'fixed';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, { text: qrToken, width: 200, height: 200 });
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    let qrSrc = '';
+    const canvasQr = tempDiv.querySelector('canvas');
+    const imgQr = tempDiv.querySelector('img');
+    if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+    else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+    document.body.removeChild(tempDiv);
+
+    // 2) Monta a etiqueta em tamanho REAL de impressora: 48mm x 30mm a 8 pontos/mm
+    //    (dado tirado do manual da sua impressora) = 384px x 240px
+    const labelContainer = document.createElement('div');
+    labelContainer.style.position = 'fixed';
+    labelContainer.style.left = '-9999px';
+    labelContainer.style.top = '0';
+    labelContainer.style.width = '384px';
+    labelContainer.style.height = '240px';
+    labelContainer.innerHTML = `
+        <div style="width:384px;height:240px;padding:8px;box-sizing:border-box;background:#fff;color:#000;
+                    font-family:Arial, Helvetica, sans-serif;display:flex;align-items:center;gap:12px;overflow:hidden;">
+            <div style="flex:0 0 128px;width:128px;height:128px;">
+                ${qrSrc ? `<img src="${qrSrc}" style="width:128px;height:128px;display:block;">` : ''}
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;">
+                <div style="font-size:22px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                ${idade ? `<div style="font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                ${allergies ? `<div style="font-size:16px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                <div style="font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                <div style="font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(labelContainer);
+
+    // 3) Transforma a etiqueta INTEIRA numa única imagem
+    const canvasEtiqueta = await html2canvas(labelContainer, {
+        width: 384, height: 240, scale: 1, backgroundColor: '#ffffff'
+    });
+    document.body.removeChild(labelContainer);
+    const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+
+    // 4) Envia DIRETO pro RawBT (esquema próprio do app) — não passa pelo
+    // sistema de impressão do Android, então não tem diálogo nem paginação.
+    window.location.href = 'rawbt:' + etiquetaBase64;
+}*/
+
+
+/*async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId) {
+    // 1) Gera o QR Code num container temporário anexado ao body
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'fixed';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, { text: qrToken, width: 240, height: 240 }); // gerado maior pra manter nitidez
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    let qrSrc = '';
+    const canvasQr = tempDiv.querySelector('canvas');
+    const imgQr = tempDiv.querySelector('img');
+    if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+    else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+    document.body.removeChild(tempDiv);
+
+    // 2) Monta a etiqueta em tamanho REAL de impressora: 48mm x 30mm a 8 pontos/mm = 384px x 240px
+    const labelContainer = document.createElement('div');
+    labelContainer.style.position = 'fixed';
+    labelContainer.style.left = '-9999px';
+    labelContainer.style.top = '0';
+    labelContainer.style.width = '384px';
+    labelContainer.style.height = '240px';
+    labelContainer.innerHTML = `
+        <div style="width:384px;height:240px;padding:8px;box-sizing:border-box;background:#fff;color:#000;
+                    font-family:Arial, Helvetica, sans-serif;display:flex;align-items:center;gap:10px;overflow:hidden;">
+            <div style="flex:0 0 154px;width:154px;height:154px;">
+                ${qrSrc ? `<img src="${qrSrc}" style="width:154px;height:154px;display:block;">` : ''}
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;">
+                <div style="font-size:20px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                ${idade ? `<div style="font-size:14px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                ${allergies ? `<div style="font-size:14px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                <div style="font-size:14px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                <div style="font-size:14px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(labelContainer);
+
+    // 3) Transforma a etiqueta INTEIRA numa única imagem
+    const canvasEtiqueta = await html2canvas(labelContainer, {
+        width: 384, height: 240, scale: 1, backgroundColor: '#ffffff'
+    });
+    document.body.removeChild(labelContainer);
+    const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+
+    // 4) Envia DIRETO pro RawBT
+    window.location.href = 'rawbt:' + etiquetaBase64;
+}*/
+
+        async function printLabel(qrToken, childName, allergies, idade, fatherPhone, motherPhone, checkinId) {
+            // 1) Gera o QR Code num container temporário anexado ao body
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            document.body.appendChild(tempDiv);
+            new QRCode(tempDiv, { text: qrToken, width: 240, height: 240 });
+            await new Promise(resolve => setTimeout(resolve, 300));
+        
+            let qrSrc = '';
+            const canvasQr = tempDiv.querySelector('canvas');
+            const imgQr = tempDiv.querySelector('img');
+            if (canvasQr) qrSrc = canvasQr.toDataURL('image/png');
+            else if (imgQr && imgQr.src) qrSrc = imgQr.src;
+            document.body.removeChild(tempDiv);
+        
+            // 2) Monta a etiqueta em tamanho REAL de impressora: 48mm x 30mm a 8 pontos/mm = 384px x 240px
+            const labelContainer = document.createElement('div');
+            labelContainer.style.position = 'fixed';
+            labelContainer.style.left = '-9999px';
+            labelContainer.style.top = '0';
+            labelContainer.style.width = '384px';
+            labelContainer.style.height = '240px';
+            labelContainer.innerHTML = `
+                <div style="width:384px;height:240px;padding:8px;box-sizing:border-box;background:#fff;color:#000;
+                            font-family:Arial, Helvetica, sans-serif;display:flex;align-items:center;gap:8px;overflow:hidden;">
+                    <div style="flex:0 0 154px;width:154px;height:154px;">
+                        ${qrSrc ? `<img src="${qrSrc}" style="width:154px;height:154px;display:block;">` : ''}
+                    </div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;">
+                        <div style="font-size:24px;font-weight:bold;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(childName)}</div>
+                        ${idade ? `<div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Idade: ${escapeHtml(idade)}</div>` : ''}
+                        ${allergies ? `<div style="font-size:17px;font-weight:bold;color:#b91c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠️ ${escapeHtml(allergies)}</div>` : ''}
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pai: ${escapeHtml(fatherPhone)}</div>
+                        <div style="font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mãe: ${escapeHtml(motherPhone)}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(labelContainer);
+        
+            // 3) Transforma a etiqueta INTEIRA numa única imagem
+            const canvasEtiqueta = await html2canvas(labelContainer, {
+                width: 384, height: 240, scale: 1, backgroundColor: '#ffffff'
+            });
+            document.body.removeChild(labelContainer);
+            const etiquetaBase64 = canvasEtiqueta.toDataURL('image/png');
+        
+            // 4) Envia DIRETO pro RawBT
+            window.location.href = 'rawbt:' + etiquetaBase64;
+        }
+
+        
+
+        // ========== REIMPRESSÃO (2ª via) A PARTIR DA LISTA ==========
+async function reprintLabelFromList(checkinId) {
+    showToast('Gerando 2ª via da etiqueta...', 'info');
+
+    // Busca o check-in junto com a criança, a família e o TOKEN original
+    // (é o mesmo token que já está colado na etiqueta física da criança,
+    // por isso reimprimimos com o mesmo QR, e não um novo)
+    const { data: checkin, error } = await supabaseClient
+        .from('kids_check_ins')
+        .select('*, child:child_id(*, family:family_id(*)), token:token_id(token, expires_at)')
+        .eq('id', checkinId)
+        .single();
+
+    if (error || !checkin) {
+        showToast('Erro ao buscar dados para reimpressão', 'error');
+        return;
+    }
+
+    const child = checkin.child || {};
+    const family = child.family || {};
+
+    if (!checkin.token || !checkin.token.token) {
+        showToast('Não foi possível encontrar o QR original desta criança', 'error');
+        return;
+    }
+
+    let idade = '';
+    if (child.birth_date) idade = `${calcularIdade(child.birth_date)} anos`;
+
+    await printLabel(
+        checkin.token.token,          // mesmo QR já colado na criança
+        child.name || 'Criança',
+        child.allergies || '',
+        idade,
+        family.father_phone || 'Não informado',
+        family.mother_phone || 'Não informado',
+        checkin.id
+    );
+
+    showToast('2ª via enviada para impressão', 'success');
+}
+
+        // ========== DETALHES DA CRIANÇA ==========
+        async function showChildDetails(childId) {
+            const { data: child, error } = await supabaseClient
+                .from('kids_children')
+                .select('*, family:family_id(*)')
+                .eq('id', childId)
+                .single();
+            if (error || !child) {
+                showToast('Erro ao carregar detalhes', 'error');
+                return;
+            }
+            const family = child.family || {};
+            const html = `
+                <button class="modal-close" onclick="closeChildDetailsModal()">&times;</button>
+                <div style="text-align:center;">
+                    ${child.photo_url ? `<img src="${child.photo_url}" style="width:100px; height:100px; border-radius:50%; object-fit:cover;">` : '<div style="width:100px;height:100px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem;">👶</div>'}
+                    <h3 style="margin: 0.5rem 0;">${escapeHtml(child.name)}</h3>
+                    <p><strong>📅 Nascimento:</strong> ${child.birth_date ? new Date(child.birth_date).toLocaleDateString() : 'Não informado'}</p>
+                    <p><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies) || 'Nenhuma'}</p>
+                    <p><strong>🔹 Necessidades:</strong> ${escapeHtml(child.special_needs) || 'Nenhuma'}</p>
+                    <hr style="margin:1rem 0;">
+                    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            ${family.father_photo_url ? `<img src="${family.father_photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">` : '<div style="width:60px;height:60px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;">👨</div>'}
+                            <div><strong>Pai:</strong> ${escapeHtml(family.father_name) || 'Não informado'}</div>
+                            <div>📞 ${escapeHtml(family.father_phone) || '-'}</div>
+                        </div>
+                        <div style="text-align:center;">
+                            ${family.mother_photo_url ? `<img src="${family.mother_photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">` : '<div style="width:60px;height:60px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;">👩</div>'}
+                            <div><strong>Mãe:</strong> ${escapeHtml(family.mother_name) || 'Não informado'}</div>
+                            <div>📞 ${escapeHtml(family.mother_phone) || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const modalContent = document.getElementById('childDetailsContent');
+            modalContent.innerHTML = html;
+            document.getElementById('childDetailsModal').style.display = 'flex';
+        }
+        function closeChildDetailsModal() { document.getElementById('childDetailsModal').style.display = 'none'; }
+
+        // ========== LISTA DE PRESENTES ==========
+       async function loadPresentList() {
+    if (!currentSessionId) return;
+    
+    // Buscar check-ins ativos da sessão atual
+    let query = supabaseClient
+        .from('kids_check_ins')
+        .select('*, child:child_id(id, name, allergies, birth_date, photo_url)')
+        .eq('session_id', currentSessionId)
+        .is('checked_out_at', null);
+
+    const { data: allCheckins } = await query;
+    
+    // Filtrar por sala, se necessário
+    let checkins = allCheckins;
+    if (currentRoomFilter !== 'todos') {
+        checkins = allCheckins?.filter(c => c.room === currentRoomFilter) || [];
+    }
+
+    const { data: visitants } = await supabaseClient
+        .from('kids_visitants')
+        .select('*')
+        .eq('session_id', currentSessionId);
+
+    let html = '';
+    
+    // Botão de gerenciar (aparece apenas quando não está na aba "todos")
+    if (currentRoomFilter !== 'todos') {
+        html += `
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button class="btn-secondary" onclick="openRoomModal('${currentRoomFilter}')" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span>🔄</span> Gerenciar crianças nesta sala
+                </button>
+            </div>
+        `;
+    }
+    
+    // Crianças cadastradas
+    if (checkins?.length) {
+        html += `<h4>👶 Crianças cadastradas ${currentRoomFilter !== 'todos' ? `(Sala: ${currentRoomFilter})` : ''}</h4>`;
+        for (const c of checkins) {
+            let isBirthdayWeek = false;
+            if (c.child.birth_date) {
+                const birth = new Date(c.child.birth_date);
+                const today = new Date();
+                const weekLater = new Date();
+                weekLater.setDate(today.getDate() + 7);
+                const birthThisYear = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+                if (birthThisYear >= today && birthThisYear <= weekLater) isBirthdayWeek = true;
+            }
+            const birthdayIcon = isBirthdayWeek ? '🎂 ' : '';
+            html += `
+                <div class="present-item" style="border-left-color: ${c.room === 'Kids' ? '#3b82f6' : (c.room === 'Babys' ? '#f59e0b' : (c.room === 'Juvenis' ? '#8b5cf6' : '#10b981'))}">
+                    <div class="present-info">
+                        <div class="present-name">${birthdayIcon}${escapeHtml(c.child.name)} ${c.badge_number ? `<span class="badge" style="background:#e2e8f0;">🏷️ ${c.badge_number}</span>` : ''} ${c.child.allergies ? '<span class="badge">⚠️</span>' : ''}</div>
+                        <div class="present-time">Check-in: ${new Date(c.checked_in_at).toLocaleTimeString()}</div>
+                        ${c.room !== 'todos' && currentRoomFilter === 'todos' ? `<div class="present-time" style="color:${c.room === 'Kids' ? '#3b82f6' : (c.room === 'Babys' ? '#f59e0b' : '#8b5cf6')}">📌 Sala: ${c.room}</div>` : ''}
+                    </div>
+                    <div class="present-actions">
+                        <button class="btn-icon" onclick="showChildDetails('${c.child_id}')">👁️</button>
+                        <button class="btn-icon" onclick="reprintLabelFromList('${c.id}')">🖨️</button>
+                        <button class="btn-icon btn-danger" onclick="checkoutManual('${c.id}')">Check-out</button>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (currentRoomFilter !== 'todos') {
+        html += `<p style="text-align:center;color:#64748b;">Nenhuma criança nesta sala. Clique em "Gerenciar" para adicionar.</p>`;
+    }
+    
+    // Visitantes (só aparecem na aba "todos")
+    if (currentRoomFilter === 'todos' && visitants?.length) {
+        html += `<h4 style="margin-top:1rem;">📝 Visitantes</h4>`;
+        html += visitants.map(v => `
+            <div class="present-item visitant-item">
+                <div class="present-info">
+                    <div class="present-name">${escapeHtml(v.child_name)} (resp: ${escapeHtml(v.responsible_name)})</div>
+                    <div class="present-time">Check-in: ${new Date(v.checked_in_at).toLocaleTimeString()}</div>
+                </div>
+                <div class="present-actions">
+                    <button class="btn-icon btn-danger" onclick="removeVisitant('${v.id}')">Finalizar</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    if (!checkins?.length && (!visitants?.length || currentRoomFilter !== 'todos')) {
+        html = '<p style="text-align:center;color:#64748b;">Nenhuma criança presente.</p>';
+    }
+    document.getElementById('presentList').innerHTML = html;
+}
+
+        async function checkoutManual(checkinId) {
+            await supabaseClient.from('kids_check_ins').update({ checked_out_at: new Date().toISOString() }).eq('id', checkinId);
+            const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).single();
+            if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
+            await loadPresentList();
+            showToast('Check-out manual realizado', 'success');
+        }
+
+        async function removeVisitant(id) {
+            await supabaseClient.from('kids_visitants').delete().eq('id', id);
+            await loadPresentList();
+            showToast('Visitante removido', 'success');
+        }
+
+        // ========== ROOM MODAL ==========
+        async function openRoomModal(roomName) {
+            pendingRoom = roomName;
+            const { data: checkins } = await supabaseClient
+                .from('kids_check_ins')
+                .select('id, child_id, child:child_id(id, name, birth_date, photo_url)')
+                .eq('session_id', currentSessionId)
+                .is('checked_out_at', null);
+            if (!checkins?.length) {
+                showToast('Não há crianças presentes', 'error');
+                return;
+            }
+            const { data: assigned } = await supabaseClient
+                .from('kids_check_ins')
+                .select('id, room')
+                .eq('session_id', currentSessionId)
+                .in('id', checkins.map(c => c.id));
+            const roomMap = new Map();
+            assigned?.forEach(a => roomMap.set(a.id, a.room));
+            childrenForRoom = checkins.map(c => ({
+                checkinId: c.id,
+                childId: c.child_id,
+                name: c.child.name,
+                photo: c.child.photo_url,
+                birth_date: c.child.birth_date,
+                currentRoom: roomMap.get(c.id) || 'todos'
+            }));
+            document.getElementById('roomModalTitle').innerHTML = `Mover para sala: ${roomName}`;
+            const container = document.getElementById('roomChildrenList');
+            container.innerHTML = childrenForRoom.map(child => `
+                <div class="room-item">
+                    ${child.photo ? `<img src="${child.photo}" onerror="this.src='https://via.placeholder.com/40'">` : '<div style="width:45px;height:45px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;">👶</div>'}
+                    <label style="flex:1;">
+                        <input type="checkbox" class="room-checkbox" data-checkin-id="${child.checkinId}" ${child.currentRoom === pendingRoom ? 'checked' : ''}>
+                        ${escapeHtml(child.name)} ${child.birth_date ? `(${calculateAge(child.birth_date)} anos)` : ''}
+                    </label>
+                </div>
+            `).join('');
+            document.getElementById('roomModal').style.display = 'flex';
+        }
+
+        function calculateAge(birthDateStr) {
+            const birth = new Date(birthDateStr);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            return age;
+        }
+
+        async function saveRoomAssignments() {
+    const checkboxes = document.querySelectorAll('.room-checkbox');
+    const updates = [];
+    for (const cb of checkboxes) {
+        const checkinId = cb.dataset.checkinId;
+        const shouldAssign = cb.checked;
+        if (shouldAssign) {
+            updates.push({ id: checkinId, room: pendingRoom });
+        } else {
+            const child = childrenForRoom.find(c => c.checkinId == checkinId);
+            if (child && child.currentRoom === pendingRoom) {
+                updates.push({ id: checkinId, room: 'todos' });
+            }
+        }
+    }
+    for (const upd of updates) {
+        await supabaseClient.from('kids_check_ins').update({ room: upd.room }).eq('id', upd.id);
+    }
+    closeRoomModal();
+    // Recarregar a lista mantendo a aba atual
+    await loadPresentList();
+    showToast('Salas atualizadas', 'success');
+}
+
+        
+        function closeRoomModal() { document.getElementById('roomModal').style.display = 'none'; pendingRoom = null; }
+
+        // ========== VISITANTE ==========
+        async function registerVisitant() {
+            const childName = document.getElementById('visitantName').value.trim();
+            const respName = document.getElementById('respName').value.trim();
+            const respPhone = document.getElementById('respPhone').value.trim();
+            if (!childName || !respName) { showToast('Preencha nome da criança e responsável', 'error'); return; }
+            const { error } = await supabaseClient.from('kids_visitants').insert({
+                child_name: childName,
+                responsible_name: respName,
+                responsible_phone: respPhone,
+                session_id: currentSessionId,
+                checked_in_by: currentStaffId
+            });
+            if (error) { showToast(error.message, 'error'); return; }
+            showToast('Visitante registrado', 'success');
+            closeModal();
+            await loadPresentList();
+            document.getElementById('visitantName').value = '';
+            document.getElementById('respName').value = '';
+            document.getElementById('respPhone').value = '';
+        }
+
+        // ========== SESSÃO ==========
+        function openSessionModal() { document.getElementById('sessionModal').style.display = 'flex'; }
+        function closeSessionModal() { document.getElementById('sessionModal').style.display = 'none'; }
+        async function createSession() {
+            const name = document.getElementById('sessionName').value.trim();
+            const date = document.getElementById('sessionDate').value;
+            const start = document.getElementById('sessionStart').value;
+            const end = document.getElementById('sessionEnd').value;
+            if (!name || !date) { showToast('Nome e data são obrigatórios', 'error'); return; }
+            const { error } = await supabaseClient.from('kids_sessions').insert({
+                name, session_date: date, start_time: start, end_time: end, is_active: true
+            });
+            if (error) showToast(error.message, 'error');
+            else {
+                showToast('Sessão criada!', 'success');
+                closeSessionModal();
+                await loadSessions();
+                document.getElementById('sessionName').value = '';
+                document.getElementById('sessionDate').value = '';
+                document.getElementById('sessionStart').value = '';
+                document.getElementById('sessionEnd').value = '';
+            }
+        }
+
+        function openVisitanteModal() { document.getElementById('visitanteModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('visitanteModal').style.display = 'none'; }
+
+        // ========== RELATÓRIO PDF ==========
+        async function gerarRelatorio() {
+            if (!currentSessionId) { showToast('Selecione uma sessão primeiro', 'error'); return; }
+            const { data: sessionData } = await supabaseClient.from('kids_sessions').select('name, session_date').eq('id', currentSessionId).single();
+            const { data: checkins } = await supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(id, name, birth_date, allergies)')
+                .eq('session_id', currentSessionId);
+            const totalCriancas = checkins?.length || 0;
+            const presentesAgora = checkins?.filter(c => !c.checked_out_at).length || 0;
+            const hoje = new Date();
+            const semanaFim = new Date(hoje); semanaFim.setDate(hoje.getDate() + 7);
+            const aniversariantes = (checkins || []).filter(c => {
+                if (!c.child.birth_date) return false;
+                const nasc = new Date(c.child.birth_date);
+                const aniversarioEsteAno = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+                return aniversarioEsteAno >= hoje && aniversarioEsteAno <= semanaFim;
+            }).map(c => c.child.name);
+            const reportHtml = `
+                <div class="report-container" id="reportContent">
+                    <div class="report-header">
+                        <img src="https://via.placeholder.com/80x80?text=Logo" alt="Logo">
+                        <div class="report-title">Relatório de Presenças</div>
+                        <div class="report-subtitle">${escapeHtml(sessionData?.name || 'Sessão')} - ${new Date(sessionData?.session_date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number">${totalCriancas}</div><div class="stat-label">Total de crianças</div></div>
+                        <div class="stat-card"><div class="stat-number">${presentesAgora}</div><div class="stat-label">Presentes agora</div></div>
+                        <div class="stat-card"><div class="stat-number">${aniversariantes.length}</div><div class="stat-label">Aniversariantes da semana</div></div>
+                    </div>
+                    <h3>📋 Lista de crianças</h3>
+                    <table><thead><tr><th>Nome</th><th>Idade</th><th>Alergias</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody>
+                        ${(checkins || []).map(c => {
+                            let idade = '';
+                            if (c.child.birth_date) {
+                                const nasc = new Date(c.child.birth_date);
+                                let age = hoje.getFullYear() - nasc.getFullYear();
+                                const m = hoje.getMonth() - nasc.getMonth();
+                                if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) age--;
+                                idade = `${age} anos`;
+                            }
+                            const isBirthday = aniversariantes.includes(c.child.name);
+                            return `<tr class="${isBirthday ? 'birthday' : ''}"><td>${escapeHtml(c.child.name)} ${isBirthday ? '🎂' : ''}</td><td>${idade}</td><td>${escapeHtml(c.child.allergies || '-')}</td><td>${new Date(c.checked_in_at).toLocaleString()}</td><td>${c.checked_out_at ? new Date(c.checked_out_at).toLocaleString() : 'Ainda presente'}</td></tr>`;
+                        }).join('')}
+                    </tbody></table>
+                    <p><em>Relatório gerado em ${new Date().toLocaleString()}</em></p>
+                </div>
+            `;
+            const printDiv = document.getElementById('reportPrintArea');
+            printDiv.innerHTML = reportHtml;
+            printDiv.style.display = 'block';
+            const element = document.getElementById('reportContent');
+            html2pdf().from(element).set({ margin: [0.5,0.5,0.5,0.5], filename: `relatorio_${sessionData?.name || 'sessao'}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).save().then(() => { printDiv.style.display = 'none'; }).catch(() => { showToast('Erro ao gerar PDF', 'error'); printDiv.style.display = 'none'; });
+        }
+
+        
+
+        
+
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+        async function logout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+
+        init();
+
+
+        // ========== CHECKOUT COM CONFIRMAÇÃO ==========
+let pendingCheckoutData = null;
+
+function openCheckoutConfirmModal(childId, checkinId) {
+    // Buscar dados da criança e família para exibir no modal
+    supabaseClient
+        .from('kids_children')
+        .select('*, family:family_id(*)')
+        .eq('id', childId)
+        .single()
+        .then(({ data: child, error }) => {
+            if (error) {
+                showToast('Erro ao carregar dados', 'error');
+                return;
+            }
+            const family = child.family || {};
+            const idade = child.birth_date ? `${calcularIdade(child.birth_date)} anos` : 'Não informado';
+            const html = `
+                <div style="text-align:center;">
+                    ${child.photo_url ? `<img src="${child.photo_url}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom: 0.5rem;">` : '<div style="width:80px;height:80px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 0.5rem;">👶</div>'}
+                    <h3 style="margin: 0.2rem 0;">${escapeHtml(child.name)}</h3>
+                    <p><strong>📅 Idade:</strong> ${idade}</p>
+                    ${child.allergies ? `<p><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies)}</p>` : ''}
+                    ${child.special_needs ? `<p><strong>🔹 Necessidades:</strong> ${escapeHtml(child.special_needs)}</p>` : ''}
+                    <hr style="margin:0.5rem 0;">
+                    <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; font-size:0.85rem;">
+                        <div><strong>Pai:</strong> ${escapeHtml(family.father_name || 'N/I')} - ${escapeHtml(family.father_phone || '')}</div>
+                        <div><strong>Mãe:</strong> ${escapeHtml(family.mother_name || 'N/I')} - ${escapeHtml(family.mother_phone || '')}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('checkoutChildInfo').innerHTML = html;
+            pendingCheckoutData = { checkinId };
+            document.getElementById('checkoutConfirmModal').style.display = 'flex';
+        });
+}
+
+    function closeCheckoutConfirmModal() {
+        document.getElementById('checkoutConfirmModal').style.display = 'none';
+        pendingCheckoutData = null;
+    }
+    
+    async function confirmCheckout() {
+        if (!pendingCheckoutData) return;
+        const { checkinId } = pendingCheckoutData;
+    
+        // Atualizar check-out
+        await supabaseClient.from('kids_check_ins').update({ checked_out_at: new Date().toISOString() }).eq('id', checkinId);
+        // Invalidar token associado
+        const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).single();
+        if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
+    
+        showToast('Check-out realizado com sucesso!', 'success');
+        document.getElementById('scanResult').innerHTML = `✅ Check-out confirmado!`;
+        closeCheckoutConfirmModal();
+        await loadPresentList();
+    }
+    </script>
+</body>
+</html>

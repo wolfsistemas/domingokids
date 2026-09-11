@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Domingo Kids | Pais</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="description" content="Painel dos pais do Domingo Kids. Acompanhe o check-in das crianças.">
+
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="shortcut icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Domingo Kids">
+    <meta name="apple-mobile-web-app-title" content="Domingo Kids">
+    <meta name="theme-color" content="#8b5a6a">
+    <link rel="manifest" href="manifest.json">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Domingo Kids">
+    <meta property="og:title" content="Domingo Kids | Pais">
+    <meta property="og:description" content="Painel dos pais do Domingo Kids. Acompanhe o check-in das crianças.">
+    <meta property="og:url" content="https://videirajatai.com.br/domingokids/pais.html">
+    <meta property="og:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Domingo Kids | Pais">
+    <meta name="twitter:description" content="Painel dos pais do Domingo Kids. Acompanhe o check-in das crianças.">
+    <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+
+    <script src="config.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/push.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f3f4f6;
+            padding-bottom: 5rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            padding: 1.8rem 1.5rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .header p {
+            opacity: 0.8;
+            margin-top: 0.3rem;
+            font-size: 0.9rem;
+        }
+        .header-buttons {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border: 1px solid #eef2ff;
+            animation: fadeIn 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+        }
+
+        .child-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eef2ff;
+        }
+        .child-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .child-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .child-info {
+            flex: 1;
+        }
+        .child-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .allergy {
+            font-size: 0.75rem;
+            color: #b91c1c;
+            background: #fee2e2;
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            margin-top: 0.3rem;
+        }
+        .special-need {
+            font-size: 0.75rem;
+            color: #1e40af;
+            background: #dbeafe;
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            margin-top: 0.3rem;
+            margin-left: 0.4rem;
+        }
+        .child-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.3rem;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .btn-icon:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-refresh {
+            background: transparent;  
+            border: none;          
+            color: #3b82f6;
+            padding: 0.3rem 0.3rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-refresh:hover {
+            background: #eef2ff;
+        }
+       
+        .card-header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .card-header-with-button h3 {
+            margin: 0;
+        }
+        .btn-add-child-inline {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 2rem;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #334155;
+        }
+        .btn-add-child-inline:hover {
+            background: #cbd5e1;
+            transform: scale(1.02);
+        }
+
+        .qr-preview {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 0.8rem;
+            border: 1px dashed #cbd5e1;
+        }
+        .btn-generate {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .btn-generate:hover {
+            background: #059669;
+            transform: scale(1.01);
+        }
+
+        .last-register {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn-outline-small {
+            background: transparent;
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-outline-small:hover {
+            background: #eef2ff;
+        }
+
+        .history-list-modal {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .history-item-modal {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.6rem 0;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 650px;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #475569;
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: #0f172a;
+            padding-right: 1.5rem;
+        }
+        .modal-content input, 
+        .modal-content textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 1rem;
+            border: 1px solid #cbd5e1;
+            margin: 0.4rem 0 0.8rem;
+            font-size: 0.9rem;
+        }
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 0.7rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .photo-preview {
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .photo-preview img {
+            max-width: 60px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+        }
+        select, .child-selector {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 1rem;
+            border: 1px solid #cbd5e1;
+            margin: 0.5rem 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards do modal de configuração (mantido) */
+        .profile-card {
+            background: #ffffff;
+            border-radius: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #eef2ff;
+            transition: 0.2s;
+        }
+        .profile-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .card-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+        .card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-info {
+            flex: 1;
+        }
+        .card-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 1.1rem;
+            color: #0f172a;
+        }
+        .card-info p {
+            margin: 2px 0;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            justify-content: flex-end;
+        }
+        .btn-edit-card {
+            background: #e2e8f0;
+            border: none;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-edit-card:hover {
+            background: #cbd5e1;
+        }
+        .add-card {
+            border: 2px dashed #cbd5e1;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+        .add-card:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .family-name-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0;
+        }
+        .family-name-card h3 {
+            margin: 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: #1e293b;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 3rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <!--<button class="btn-header" onclick="openHistoryModal()">📜 Histórico</button>-->
+            <button class="btn-header" onclick="openConfigModal()">⚙️</button>
+            <button class="btn-header" onclick="logout()">Sair</button>
+        </div>
+        <h1>👨‍👩‍👧 Domingo Kids</h1>
+        <p>Radicais Kids - Check-in</p>
+    </div>
+
+    <div class="container">
+        <!-- Lista de crianças com botão inline -->
+        <div class="card">
+            <div class="card-header-with-button">
+                <h3>Cadastro de Crianças</h3>
+                <button class="btn-add-child-inline" onclick="openAddChildModal()" title="Adicionar criança">+</button>
+            </div>
+            <div id="childrenList">Carregando...</div>
+        </div>
+
+        <!-- Gerador QR Code (só aparece se houver família) -->
+        <div id="qrSection" style="display:none;">
+            <div class="card">
+                <h3>Check-in com QR Code</h3>
+                <label>Selecione:</label>
+                <select id="childSelect"></select>
+                <button class="btn-generate" onclick="generateQR()">📱 Gerar QR Code </button>
+                <div id="qrcode" class="qr-preview"></div>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">Mostre o QR para a equipe no momento do check-in.</p>
+            </div>
+        </div>
+
+        <!-- Último registro -->
+        <div class="card">
+            <div class="card-header-with-button">                
+                <h3>Último registro <button class="btn-refresh" onclick="refresh()" title="Recarregar">🔄</button></h3>                
+                <button class="btn-outline-small" onclick="openHistoryModal()">Ver todos</button>
+            </div>
+            <div id="lastRegisterInfo" class="last-register">Carregando...</div>
+        </div>
+    </div>
+
+    <!-- Modal de criança (adicionar/editar) -->
+    <div id="childModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChildModal()">&times;</button>
+            <h3 id="modalTitle">Adicionar Criança</h3>
+            <input type="hidden" id="childId" value="">
+            <label>Nome da criança *</label>
+            <input type="text" id="childName" placeholder="Ex: Maria Silva" required>
+            <label>Data de nascimento</label>
+            <input type="date" id="childBirthDate">
+            <label>Alergias (opcional)</label>
+            <textarea id="childAllergies" placeholder="Ex: leite, amendoim, lactose..."></textarea>
+            <label>Necessidades especiais (opcional)</label>
+            <textarea id="childSpecialNeeds" placeholder="Ex: autismo, TDAH, mobilidade reduzida..."></textarea>
+            <label>Foto da criança</label>
+            <input type="file" id="childPhoto" accept="image/jpeg, image/png, image/webp">
+            <div id="currentPhotoPreview" class="photo-preview"></div>
+            <button class="btn-primary" onclick="saveChild()">Salvar</button>
+            <button class="btn-outline" onclick="closeChildModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de configuração da família (mantido igual ao original) -->
+    <div id="configModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="modal-close" onclick="closeConfigModal()">&times;</button>
+            <h3 style="margin-bottom: 1.5rem;">⚙️ Dados da Família</h3>
+
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.3rem;"></span>
+                        <h4 style="margin: 0; color: #0f172a;">Nome da Família</h4>
+                    </div>
+                    <button class="btn-edit-card" onclick="openEditFamilyNameModal()">✏️</button>
+                </div>
+                <div style="background: #f8fafc; border-radius: 1rem; padding: 0.8rem 1rem; border: 1px solid #e2e8f0;">
+                    <span id="familyNameDisplay" style="font-size: 1.1rem; font-weight: 500; color: #1e293b;">Carregando...</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <span style="font-size: 1.3rem;"></span>
+                    <h4 style="margin: 0; color: #0f172a;">Responsáveis</h4>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="background: #ffffff; border-radius: 1.2rem; padding: 1rem; border: 1px solid #eef2ff; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div id="fatherAvatar" style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden;">👨</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #0f172a;" id="fatherNameDisplay">Pai não informado</div>
+                                <div style="font-size: 0.85rem; color: #475569; margin-top: 4px;" id="fatherPhoneDisplay">📞 -</div>
+                            </div>
+                            <button class="btn-edit-card" onclick="openEditFatherModal()">✏️</button>
+                        </div>
+                    </div>
+                    <div style="background: #ffffff; border-radius: 1.2rem; padding: 1rem; border: 1px solid #eef2ff; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div id="motherAvatar" style="width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden;">👩</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #0f172a;" id="motherNameDisplay">Mãe não informada</div>
+                                <div style="font-size: 0.85rem; color: #475569; margin-top: 4px;" id="motherPhoneDisplay">📞 -</div>
+                            </div>
+                            <button class="btn-edit-card" onclick="openEditMotherModal()">✏️</button>
+                        </div>
+                    </div>
+                    <div style="background: #fafcff; border-radius: 1.2rem; padding: 0.8rem; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s;" onclick="showToast('Funcionalidade disponível em Breve', 'error')">
+                        <span style="font-size: 1.2rem;">➕</span>
+                        <span style="font-size: 0.9rem; color: #3b82f6;">Adicionar outro responsável</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.3rem;"></span>
+                        <h4 style="margin: 0; color: #0f172a;">Meu Endereço</h4>
+                    </div>
+                    <button class="btn-edit-card" onclick="openEditResidenceModal()">✏️</button>
+                </div>
+                <div style="background: #f8fafc; border-radius: 1rem; padding: 0.8rem 1rem; border: 1px solid #e2e8f0;">
+                    <div id="addressDisplay" style="margin-bottom: 6px;">Endereço não informado</div>
+                    <div id="cellGroupDisplay" style="font-size: 0.85rem; color: #475569;">Célula: não informada</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais de edição (pai, mãe, residência, nome da família) - mantidos -->
+    <div id="editFatherModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditFatherModal()">&times;</button>
+            <h3>Editar dados do Pai</h3>
+            <label>Nome completo</label>
+            <input type="text" id="editFatherName" placeholder="Nome do pai">
+            <label>Telefone</label>
+            <input type="tel" id="editFatherPhone" placeholder="(99) 99999-9999">
+            <label>Foto do pai</label>
+            <input type="file" id="editFatherPhoto" accept="image/jpeg, image/png, image/webp">
+            <div id="editFatherPhotoPreview" class="photo-preview"></div>
+            <button class="btn-primary" onclick="saveFatherData()">Salvar</button>
+            <button class="btn-outline" onclick="closeEditFatherModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="editMotherModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditMotherModal()">&times;</button>
+            <h3>Editar dados da Mãe</h3>
+            <label>Nome completo</label>
+            <input type="text" id="editMotherName" placeholder="Nome da mãe">
+            <label>Telefone</label>
+            <input type="tel" id="editMotherPhone" placeholder="(99) 99999-9999">
+            <label>Foto da mãe</label>
+            <input type="file" id="editMotherPhoto" accept="image/jpeg, image/png, image/webp">
+            <div id="editMotherPhotoPreview" class="photo-preview"></div>
+            <button class="btn-primary" onclick="saveMotherData()">Salvar</button>
+            <button class="btn-outline" onclick="closeEditMotherModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="editResidenceModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditResidenceModal()">&times;</button>
+            <h3>Editar Residência</h3>
+            <label>Endereço</label>
+            <textarea id="editAddress" rows="3" placeholder="Endereço completo"></textarea>
+            <label>Sou da Célula:</label>
+            <input type="text" id="editCellGroup" placeholder="Ex: Célula dos Jovens">
+            <button class="btn-primary" onclick="saveResidenceData()">Salvar</button>
+            <button class="btn-outline" onclick="closeEditResidenceModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="editFamilyNameModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditFamilyNameModal()">&times;</button>
+            <h3>Editar nome da Família</h3>
+            <input type="text" id="editFamilyName" placeholder="Nome da família">
+            <button class="btn-primary" onclick="saveFamilyNameData()">Salvar</button>
+            <button class="btn-outline" onclick="closeEditFamilyNameModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de histórico completo -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
+            <h3>📜 Histórico completo de presenças</h3>
+            <div id="historyFullList" class="history-list-modal">Carregando...</div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== VARIÁVEIS GLOBAIS ====================
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        
+        let currentFamilyId = null;
+        let currentUser = null;
+        let currentFamilyData = {};
+
+        // ==================== INICIALIZAÇÃO ====================
+        async function loadUserAndFamily() {
+            const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+            if (userError || !user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
+
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('kids_profiles')
+                .select('family_id')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                console.error(profileError);
+                document.getElementById('childrenList').innerHTML = '<div class="card">Erro ao carregar perfil. Contate o suporte.</div>';
+                return;
+            }
+
+            registrarPush();
+
+            if (profile?.family_id) {
+                currentFamilyId = profile.family_id;
+                document.getElementById('qrSection').style.display = 'block';
+                await loadChildren();
+                await loadLastRegister();
+                await loadFamilyData();
+            } else {
+                document.getElementById('childrenList').innerHTML = `
+                    <div class="card">
+                        <p>Você ainda não possui uma família vinculada.</p>
+                        <button class="btn-primary" onclick="createFamily()">Criar nova família</button>
+                    </div>
+                `;
+                document.getElementById('qrSection').style.display = 'none';
+            }
+        }
+
+        // Criar nova família (simplificada)
+        async function createFamily() {
+            const familyName = prompt('Digite um nome para sua família (ex: Família Souza):');
+            if (!familyName) return;
+        
+            const { data: family, error } = await supabaseClient
+                .rpc('create_family', { p_family_name: familyName });
+        
+            if (error) {
+                alert('Erro ao criar família: ' + error.message);
+                return;
+            }
+        
+            currentFamilyId = family.id;
+            showToast('Família criada com sucesso!');
+            document.getElementById('qrSection').style.display = 'block';
+            await loadChildren();
+            await loadLastRegister();
+            await loadFamilyData();
+        }
+
+        // ==================== UTILITÁRIO DE FORMATAÇÃO DE DATA ====================
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                // Aceita formato YYYY-MM-DD
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return dateStr;
+                const [year, month, day] = parts;
+                return `${day}/${month}/${year}`; // DD/MM/YYYY
+            }
+
+        // Carregar dados da família
+        async function loadFamilyData() {
+            if (!currentFamilyId) return;
+            const { data: family, error } = await supabaseClient
+                .from('kids_families')
+                .select('*')
+                .eq('id', currentFamilyId)
+                .single();
+            if (error) {
+                console.error(error);
+                return;
+            }
+            if (family) {
+                document.getElementById('familyNameDisplay').innerText = family.family_name || 'Família não informada';
+                document.getElementById('fatherNameDisplay').innerText = family.father_name || 'Pai não informado';
+                document.getElementById('fatherPhoneDisplay').innerHTML = `📞 ${family.father_phone || '-'}`;
+                const fatherAvatarDiv = document.getElementById('fatherAvatar');
+                if (family.father_photo_url) {
+                    fatherAvatarDiv.innerHTML = `<img src="${family.father_photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    fatherAvatarDiv.innerHTML = '👨';
+                }
+                document.getElementById('motherNameDisplay').innerText = family.mother_name || 'Mãe não informada';
+                document.getElementById('motherPhoneDisplay').innerHTML = `📞 ${family.mother_phone || '-'}`;
+                const motherAvatarDiv = document.getElementById('motherAvatar');
+                if (family.mother_photo_url) {
+                    motherAvatarDiv.innerHTML = `<img src="${family.mother_photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    motherAvatarDiv.innerHTML = '👩';
+                }
+                document.getElementById('addressDisplay').innerText = family.address || 'Endereço não informado';
+                document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${family.cell_group || 'não informada'}`;
+                window.currentFamilyData = family;
+            }
+        }
+
+        // ==================== EDIÇÃO DO NOME DA FAMÍLIA ====================
+        function openEditFamilyNameModal() {
+            const family = window.currentFamilyData;
+            if (family) {
+                document.getElementById('editFamilyName').value = family.family_name || '';
+                document.getElementById('editFamilyNameModal').style.display = 'flex';
+            }
+        }
+        function closeEditFamilyNameModal() {
+            document.getElementById('editFamilyNameModal').style.display = 'none';
+        }
+        async function saveFamilyNameData() {
+            const familyName = document.getElementById('editFamilyName').value.trim();
+            if (!familyName) { alert('O nome da família é obrigatório.'); return; }
+            const { error } = await supabaseClient
+                .from('kids_families')
+                .update({ family_name: familyName })
+                .eq('id', currentFamilyId);
+            if (error) alert('Erro: ' + error.message);
+            else {
+                alert('Nome da família atualizado!');
+                closeEditFamilyNameModal();
+                await loadFamilyData();
+            }
+        }
+
+        // ==================== EDIÇÃO PAI, MÃE, RESIDÊNCIA ====================
+        function openEditFatherModal() {
+            const family = window.currentFamilyData;
+            if (family) {
+                document.getElementById('editFatherName').value = family.father_name || '';
+                document.getElementById('editFatherPhone').value = family.father_phone || '';
+                document.getElementById('editFatherPhoto').value = '';
+                const previewDiv = document.getElementById('editFatherPhotoPreview');
+                if (family.father_photo_url) {
+                    previewDiv.innerHTML = `<img src="${family.father_photo_url}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+                } else {
+                    previewDiv.innerHTML = '';
+                }
+                document.getElementById('editFatherModal').style.display = 'flex';
+            }
+        }
+        function closeEditFatherModal() {
+            document.getElementById('editFatherModal').style.display = 'none';
+        }
+        async function saveFatherData() {
+            const name = document.getElementById('editFatherName').value.trim();
+            const phone = document.getElementById('editFatherPhone').value.trim();
+            const photoFile = document.getElementById('editFatherPhoto').files[0];
+            let photoUrl = null;
+            if (photoFile) {
+                const formData = new FormData();
+                formData.append('image', photoFile);
+                try {
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.success) photoUrl = result.data.url;
+                    else throw new Error('Falha no upload');
+                } catch (err) {
+                    alert('Erro ao enviar foto do pai');
+                    return;
+                }
+            }
+            const updateData = { father_name: name, father_phone: phone };
+            if (photoUrl) updateData.father_photo_url = photoUrl;
+            const { error } = await supabaseClient
+                .from('kids_families')
+                .update(updateData)
+                .eq('id', currentFamilyId);
+            if (error) alert('Erro: ' + error.message);
+            else {
+                showToast('Dados do pai salvos!');
+                closeEditFatherModal();
+                await loadFamilyData();
+            }
+        }
+
+        function openEditMotherModal() {
+            const family = window.currentFamilyData;
+            if (family) {
+                document.getElementById('editMotherName').value = family.mother_name || '';
+                document.getElementById('editMotherPhone').value = family.mother_phone || '';
+                document.getElementById('editMotherPhoto').value = '';
+                const previewDiv = document.getElementById('editMotherPhotoPreview');
+                if (family.mother_photo_url) {
+                    previewDiv.innerHTML = `<img src="${family.mother_photo_url}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+                } else {
+                    previewDiv.innerHTML = '';
+                }
+                document.getElementById('editMotherModal').style.display = 'flex';
+            }
+        }
+        function closeEditMotherModal() {
+            document.getElementById('editMotherModal').style.display = 'none';
+        }
+        async function saveMotherData() {
+            const name = document.getElementById('editMotherName').value.trim();
+            const phone = document.getElementById('editMotherPhone').value.trim();
+            const photoFile = document.getElementById('editMotherPhoto').files[0];
+            let photoUrl = null;
+            if (photoFile) {
+                const formData = new FormData();
+                formData.append('image', photoFile);
+                try {
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.success) photoUrl = result.data.url;
+                    else throw new Error('Falha no upload');
+                } catch (err) {
+                    alert('Erro ao enviar foto da mãe');
+                    return;
+                }
+            }
+            const updateData = { mother_name: name, mother_phone: phone };
+            if (photoUrl) updateData.mother_photo_url = photoUrl;
+            const { error } = await supabaseClient
+                .from('kids_families')
+                .update(updateData)
+                .eq('id', currentFamilyId);
+            if (error) alert('Erro: ' + error.message);
+            else {
+                showToast('Dados da mãe salvos!');
+                closeEditMotherModal();
+                await loadFamilyData();
+            }
+        }
+
+        function openEditResidenceModal() {
+            const family = window.currentFamilyData;
+            if (family) {
+                document.getElementById('editAddress').value = family.address || '';
+                document.getElementById('editCellGroup').value = family.cell_group || '';
+                document.getElementById('editResidenceModal').style.display = 'flex';
+            }
+        }
+        function closeEditResidenceModal() {
+            document.getElementById('editResidenceModal').style.display = 'none';
+        }
+        async function saveResidenceData() {
+            const address = document.getElementById('editAddress').value.trim();
+            const cellGroup = document.getElementById('editCellGroup').value.trim();
+            const { error } = await supabaseClient
+                .from('kids_families')
+                .update({ address: address, cell_group: cellGroup })
+                .eq('id', currentFamilyId);
+            if (error) alert('Erro: ' + error.message);
+            else {
+                showToast('Dados de residência salvos!');
+                closeEditResidenceModal();
+                await loadFamilyData();
+            }
+        }
+
+        // ==================== ÚLTIMO REGISTRO DE CADA FILHO ====================
+        async function loadLastRegister() {
+            if (!currentFamilyId) return;
+            const { data: children, error: childrenError } = await supabaseClient
+                .from('kids_children')
+                .select('id, name')
+                .eq('family_id', currentFamilyId);
+            if (childrenError || !children?.length) {
+                document.getElementById('lastRegisterInfo').innerHTML = '<p>Nenhuma criança cadastrada.</p>';
+                return;
+            }
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 0.8rem;">';
+            for (const child of children) {
+                const { data: lastCheckin, error: checkError } = await supabaseClient
+                    .from('kids_check_ins')
+                    .select('*, session:session_id(name, session_date)')
+                    .eq('child_id', child.id)
+                    .order('checked_in_at', { ascending: false })
+                    .limit(1);
+                if (checkError) {
+                    console.error(checkError);
+                    continue;
+                }
+                if (lastCheckin && lastCheckin.length > 0) {
+                    const ci = lastCheckin[0];
+                    const status = ci.checked_out_at 
+                        ? `<span style="color: #059669;">✓ Saída: ${new Date(ci.checked_out_at).toLocaleString()}</span>`
+                        : `<span style="color: #2563eb; font-weight: 500;">● ATIVO</span>`;
+                    html += `
+                        <div style="border-bottom: 1px solid #eef2ff; padding-bottom: 0.6rem;">
+                            <div><strong>${escapeHtml(child.name)}</strong></div>
+                            <div style="font-size: 0.8rem; color: #475569;">${ci.session?.name || 'Sessão'}</div>
+                            <div style="font-size: 0.8rem;">${status}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="border-bottom: 1px solid #eef2ff; padding-bottom: 0.6rem;">
+                            <div><strong> ${escapeHtml(child.name)}</strong></div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Nenhum check-in registrado ainda</div>
+                        </div>
+                    `;
+                }
+            }
+            html += '</div>';
+            document.getElementById('lastRegisterInfo').innerHTML = html;
+        }
+
+        // ==================== HISTÓRICO COMPLETO ====================
+        async function openHistoryModal() {
+            if (!currentFamilyId) {
+                alert('Família não encontrada.');
+                return;
+            }
+            const { data: children } = await supabaseClient
+                .from('kids_children')
+                .select('id, name')
+                .eq('family_id', currentFamilyId);
+            if (!children?.length) {
+                document.getElementById('historyFullList').innerHTML = '<p>Nenhum check-in registrado.</p>';
+                document.getElementById('historyModal').style.display = 'flex';
+                return;
+            }
+            const childIds = children.map(c => c.id);
+            const { data: checkins } = await supabaseClient
+                .from('kids_check_ins')
+                .select('*, child:child_id(name), session:session_id(name, session_date)')
+                .in('child_id', childIds)
+                .order('checked_in_at', { ascending: false })
+                .limit(50);
+            const historyDiv = document.getElementById('historyFullList');
+            if (checkins && checkins.length) {
+                historyDiv.innerHTML = checkins.map(ci => `
+                    <div class="history-item-modal">
+                        ✅ <strong>${escapeHtml(ci.child.name)}</strong> - ${ci.session.name}
+                        ${!ci.checked_out_at ? ' <span style="color:#2563eb;">(ATIVO)</span>' : ` - Saída: ${new Date(ci.checked_out_at).toLocaleTimeString()}`}
+                    </div>
+                `).join('');
+            } else {
+                historyDiv.innerHTML = '<p>Ainda não há check-ins.</p>';
+            }
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        // ==================== CRUD DE CRIANÇAS ====================
+        async function loadChildren() {
+            if (!currentFamilyId) return;
+            const { data, error } = await supabaseClient
+                .from('kids_children')
+                .select('*')
+                .eq('family_id', currentFamilyId)
+                .order('name');
+            if (error) {
+                console.error(error);
+                document.getElementById('childrenList').innerHTML = '<p>Erro ao carregar crianças.</p>';
+                return;
+            }
+            const container = document.getElementById('childrenList');
+            const select = document.getElementById('childSelect');
+            if (data && data.length) {
+                container.innerHTML = data.map(child => `
+                    <div class="child-item">
+                        <div class="child-avatar">
+                            ${child.photo_url ? `<img src="${child.photo_url}" style="width:56px; height:56px; border-radius:50%; object-fit:cover;">` : '👶'}
+                        </div>
+                        <div class="child-info">
+                            <div class="child-name">${escapeHtml(child.name)}</div>
+                            ${child.allergies ? `<div class="allergy">⚠️ ${escapeHtml(child.allergies)}</div>` : ''}
+                            ${child.special_needs ? `<div class="special-need">🔹 ${escapeHtml(child.special_needs)}</div>` : ''}
+                            ${child.birth_date ? `<div style="font-size:0.7rem; color:#64748b;">📅 ${formatDate(child.birth_date)}</div>` : ''}
+                        </div>
+                        <div class="child-actions">
+                            <button class="btn-icon" onclick="editChild('${child.id}')" title="Editar">✏️</button>
+                            <button class="btn-icon" onclick="deleteChild('${child.id}')" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+                select.innerHTML = `<option value="">-- Selecione uma criança --</option>` + data.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+            } else {
+                container.innerHTML = '<p>Nenhuma criança cadastrada. Clique no botão + para adicionar.</p>';
+                select.innerHTML = '<option value="">-- selecione --</option>';
+            }
+        }
+
+        function openAddChildModal() {
+            document.getElementById('modalTitle').innerText = 'Adicionar Criança';
+            document.getElementById('childId').value = '';
+            document.getElementById('childName').value = '';
+            document.getElementById('childBirthDate').value = '';
+            document.getElementById('childAllergies').value = '';
+            document.getElementById('childSpecialNeeds').value = '';
+            document.getElementById('childPhoto').value = '';
+            document.getElementById('currentPhotoPreview').innerHTML = '';
+            document.getElementById('childModal').style.display = 'flex';
+        }
+
+        async function editChild(childId) {
+            const { data: child, error } = await supabaseClient
+                .from('kids_children')
+                .select('*')
+                .eq('id', childId)
+                .single();
+            if (error) {
+                alert('Erro ao carregar dados da criança.');
+                return;
+            }
+            document.getElementById('modalTitle').innerText = 'Editar Criança';
+            document.getElementById('childId').value = child.id;
+            document.getElementById('childName').value = child.name || '';
+            document.getElementById('childBirthDate').value = child.birth_date || '';
+            document.getElementById('childAllergies').value = child.allergies || '';
+            document.getElementById('childSpecialNeeds').value = child.special_needs || '';
+            document.getElementById('childPhoto').value = '';
+            const previewDiv = document.getElementById('currentPhotoPreview');
+            if (child.photo_url) {
+                previewDiv.innerHTML = `<img src="${child.photo_url}" width="80" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+            } else {
+                previewDiv.innerHTML = '';
+            }
+            document.getElementById('childModal').style.display = 'flex';
+        }
+
+        function showToast(message, type = 'info') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+            toast.offsetHeight;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function saveChild() {
+            const childId = document.getElementById('childId').value;
+            const name = document.getElementById('childName').value.trim();
+            const birthDate = document.getElementById('childBirthDate').value;
+            const allergies = document.getElementById('childAllergies').value.trim();
+            const specialNeeds = document.getElementById('childSpecialNeeds').value.trim();
+            const photoFile = document.getElementById('childPhoto').files[0];
+            if (!name) { alert('O nome da criança é obrigatório.'); return; }
+            let photoUrl = null;
+            if (photoFile) {
+                const formData = new FormData();
+                formData.append('image', photoFile);
+                try {
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) photoUrl = result.data.url;
+                    else throw new Error('Falha upload');
+                } catch (err) { alert('Erro ao enviar a foto.'); return; }
+            }
+            const childData = { name, birth_date: birthDate || null, allergies: allergies || null, special_needs: specialNeeds || null, family_id: currentFamilyId, is_active: true };
+            if (photoUrl) childData.photo_url = photoUrl;
+            let result;
+            if (childId) result = await supabaseClient.from('kids_children').update(childData).eq('id', childId);
+            else result = await supabaseClient.from('kids_children').insert([childData]);
+            if (result.error) alert('Erro ao salvar: ' + result.error.message);
+            else { showToast(childId ? 'Criança atualizada!' : 'Criança adicionada!'); closeChildModal(); await loadChildren(); }
+        }
+
+        async function deleteChild(childId) {
+            if (!confirm('Tem certeza que deseja excluir esta criança?')) return;
+            const { error } = await supabaseClient.from('kids_children').delete().eq('id', childId);
+            if (error) alert('Erro ao excluir: ' + error.message);
+            else { showToast('Criança removida.'); await loadChildren(); await loadLastRegister(); }
+        }
+
+        function closeChildModal() { document.getElementById('childModal').style.display = 'none'; }
+
+        // ==================== QR CODE ====================
+        async function generateQR() {
+            const childId = document.getElementById('childSelect').value;
+            if (!childId) {
+                showToast('Selecione uma criança para gerar o QR Code.', 'error');
+                return;
+            }
+            const token = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+            const expiresAt = new Date();
+            expiresAt.setHours(expiresAt.getHours() + 4);
+            const { error } = await supabaseClient
+                .from('kids_temporary_tokens')
+                .insert({
+                    family_id: currentFamilyId,
+                    child_id: childId,
+                    token: token,
+                    expires_at: expiresAt.toISOString()
+                });
+            if (error) {
+                showToast('Erro ao gerar QR: ' + error.message, 'error');
+                return;
+            }
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv, {
+                text: token,
+                width: 200,
+                height: 200
+            });
+            showToast('✅ QR Code gerado! Válido por 4 horas.', 'success');
+        }
+
+         function refreshPresentList() {
+            loadFamilyData();
+            showToast('Registros atualizados', 'success');
+        }        
+
+        // ==================== MODAL CONFIGURAÇÃO ====================
+        function openConfigModal() {
+            if (!currentFamilyId) { alert('Crie uma família primeiro.'); return; }
+            loadFamilyData().then(() => {
+                document.getElementById('configModal').style.display = 'flex';
+            });
+        }
+        function closeConfigModal() { document.getElementById('configModal').style.display = 'none'; }
+
+        
+
+        // ==================== UTILITÁRIOS ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+
+        function refresh() {
+        loadUserAndFamily();
+        showToast('Página Atualiazda', 'success');        
+        }
+
+        
+        async function logout() {
+            window.location.href = "index.html?t=" + Date.now();
+        }
+
+        // Inicializar
+        loadUserAndFamily();
+    </script>
+</body>
+</html>

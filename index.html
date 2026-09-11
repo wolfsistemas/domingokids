@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Domingo Kids | Igreja Videira de Jataí</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">    
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="description" content="Check-in das crianças da Igreja Videira de Jataí. Domingo Kids.">
+
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="shortcut icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Domingo Kids">
+    <meta name="apple-mobile-web-app-title" content="Domingo Kids">
+    <meta name="theme-color" content="#8b5a6a">
+    <link rel="manifest" href="manifest.json">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Domingo Kids">
+    <meta property="og:title" content="Domingo Kids | Igreja Videira de Jataí">
+    <meta property="og:description" content="Check-in das crianças da Igreja Videira de Jataí.">
+    <meta property="og:url" content="https://videirajatai.com.br/domingokids/">
+    <meta property="og:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Domingo Kids | Igreja Videira de Jataí">
+    <meta name="twitter:description" content="Check-in das crianças da Igreja Videira de Jataí.">
+    <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
+
+    <script src="config.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/pwa.js"></script>
+  
+    <style>
+        /* ===== Cores suaves (estilo Videira) ===== */
+        :root {
+            --primary: #8b5a6a;
+            --primary-hover: #7a4d5a;
+            --bg-color: #fcf7f5;
+            --text-main: #4a3b3e;
+            --text-light: #7a6a6e;
+            --input-bg: #fdfaf9;
+            --border-color: #e6dcd8;
+            --danger-text: #b34a4a;
+            --success-text: #2d6a4f;
+            --accent: #d4a373;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        #tela-login {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+            padding: 0.5rem;
+        }
+
+        .card-login {
+            background: #ffffff;
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            max-height: 95vh;
+            overflow-y: auto;
+            margin: 0 auto;
+        }
+
+        .logo {
+            width: 90px;
+            height: auto;
+            margin-bottom: 12px;            
+        } 
+        .logo2 {
+            width: 60px;
+            height: auto;
+            margin-bottom: 20px;            
+        }
+
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        p.subtitulo {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-bottom: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 0.85rem 0.9rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            outline: none;
+            transition: 0.3s;
+            background-color: var(--input-bg);
+            box-sizing: border-box;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            margin-top: 0.6rem;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {            
+            cursor: not-allowed;
+            background-color: #fdf8f6;
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #fdf8f6;
+            transform: translateY(0);
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 4px;
+            margin-top: 6px;
+            width: 100%;
+            display: inline-block;
+        }
+
+        .btn-link:hover {
+            color: var(--primary-hover);
+        }
+        .btn-link2 {
+            background-color: #fdf8f6;
+            transform: translateY(0);
+            border: none;
+            color: var(--primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 4px;
+            margin-top: 6px;
+            width: 100%;
+            display: inline-block;
+        }
+
+        .mensagem-erro,
+        .mensagem-sucesso {
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            padding: 0.6rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .mensagem-erro {
+            color: var(--danger-text);
+            background: #fdf0ee;
+            border-color: #f5d6d2;
+        }
+
+        .mensagem-sucesso {
+            color: var(--success-text);
+            background: #d1e7dd;
+            border-color: #b8d9c0;
+        }
+
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .splash-logo {
+            width: 120px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        #splash-screen p {
+            margin-top: 25px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+       /* ===== MODAL PADRÃO (base) ===== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            /*backdrop-filter: blur(4px);*/
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            transition: 0.2s;
+        }
+        .modal-close:hover { color: #333; }
+        
+        /* Para o modal de termos ter prioridade */
+        #modal-termos {
+            z-index: 2000;
+        }
+        
+        #modal-cadastro {
+            z-index: 1000;
+        }
+        #modal-cadastro .modal-box {
+            position: relative !important;
+        }
+        
+        #modal-cadastro .btn-close-modal-cadastro {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            transition: 0.2s;
+            z-index: 10; /* garante que fique sobre outros elementos */
+            line-height: 1;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .bloco {
+            display: none;
+        }
+
+        .bloco.ativo {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal de escolha (parent/staff) */
+        #modal-escolha {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            /*backdrop-filter: blur(4px);*/
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #modal-escolha .modal-box {
+            background: white;
+            padding: 2rem 1.8rem;
+            border-radius: 20px;
+            max-width: 340px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        #modal-escolha h3 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        #modal-escolha p {
+            color: var(--text-light);
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+        }
+
+        #modal-escolha .btn-escolha {
+            display: block;
+            width: 100%;
+            padding: 0.9rem;
+            margin-bottom: 0.7rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #modal-escolha .btn-pai {
+            background: var(--primary);
+            color: white;
+        }
+
+        #modal-escolha .btn-pai:hover {
+            background: var(--primary-hover);
+        }
+
+        #modal-escolha .btn-equipe {
+            background: var(--accent);
+            color: white;
+        }
+
+        #modal-escolha .btn-equipe:hover {
+            background: #c4906a;
+        }
+
+        @media (max-width: 480px) {
+            .card-login {
+                padding: 1.5rem 1.2rem;
+            }
+            .logo {
+                width: 70px;
+            }           
+            h2 {
+                font-size: 1.1rem;
+            }
+            input {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            button {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            #modal-escolha .modal-box {
+                padding: 1.5rem 1.2rem;
+            }
+        }
+
+        /* ===== TOAST FLUTUANTE ===== */            
+        .toast-container {
+            position: fixed;
+            bottom: 30px;          /* distância da borda inferior */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;  /* permite clicar atrás */
+        }
+        
+        .toast {
+            background: #333;
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            text-align: center;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+            width: 100%;
+            opacity: 0;
+            transform: translateY(30px);   /* começa um pouco abaixo */
+            animation: slideUp 0.4s ease forwards, fadeOut 0.4s 3s ease forwards;
+            pointer-events: auto;
+            word-wrap: break-word;
+        }
+        
+        .toast.success { background: #2e7d32; }
+        .toast.error   { background: #c62828; }
+        .toast.info    { background: #0d47a1; }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+        
+        /* Para telas muito pequenas, ajusta a margem */
+        @media (max-width: 480px) {
+            .toast-container {
+                bottom: 20px;
+                width: 92%;
+            }
+            .toast {
+                padding: 12px 18px;
+                font-size: 0.9rem;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <!-- ===== TELA DE LOGIN ===== -->
+    <div id="tela-login">
+        <div class="card-login">
+
+            <!-- Bloco Login -->
+            <div id="bloco-login" class="bloco ativo">
+                <img src="logo.png" class="logo" alt="Logo Kids">
+                <img src="logo3.png" class="logo2" alt="Logo Vd" style="opacity: 0.8;">
+                <h2 id="titulo-login">Domingo Kids</h2>
+                <p class="subtitulo" id="subtitulo-login">Igreja Videira de Jataí</p>
+
+                <div id="area-form">
+                    <div class="input-group">
+                        <label>Usuário ou e-mail</label>
+                        <input type="text" id="usuario-input" placeholder="usuário ou e-mail" onkeypress="verificarEnter(event, 'login')" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Senha (Somente Números)</label>                       
+                        <input type="password" id="senha-input" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" onkeypress="verificarEnter(event, 'login')" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+
+                    <button id="btn-entrar" onclick="verificarLogin()">Entrar</button>
+                    <button id="btn-biometria" class="btn-secondary" onclick="loginComBiometria()" style="display: none; margin-top: 12px;">Entrar com Biometria</button>
+                    <p id="mensagem-erro" class="mensagem-erro">⚠️ Usuário ou senha incorretos.</p>
+
+                    <button class="btn-link" onclick="mudarTela('bloco-recuperar')">Esqueci minha senha</button>
+                    <button class="btn-link" onclick="abrirModalCadastro()" style="margin-top: 8px;">Ainda não tenho conta</button>
+                    <button id="btn-remover-bio" class="btn-link" onclick="desativarBiometria()" style="display: none;">Remover Biometria</button>
+                </div>
+            </div>
+
+            <!-- Bloco Recuperar Senha -->
+            <div id="bloco-recuperar" class="bloco">
+                <img src="logo.png" style="width: 70px; border-radius: 50%; margin-bottom: 10px;" alt="Logo Kids">                
+                <h2>Recuperar Senha</h2>
+                <p class="subtitulo" style="margin-bottom: 1.5rem;">Informe seu e-mail para receber o link.</p>
+
+                <div class="input-group">
+                    <label>Seu E-mail Cadastrado *</label>
+                    <input type="email" id="rec-email" placeholder="Digite seu e-mail" onkeypress="verificarEnter(event, 'recuperar')">
+                </div>
+
+                <button id="btn-recuperar" onclick="enviarRecuperacao()">Enviar Link</button>
+                <p id="mensagem-erro-rec" class="mensagem-erro"></p>
+
+                <button class="btn-secondary" onclick="mudarTela('bloco-login')" style="margin-top: 12px; padding: 10px; font-size: 0.9rem;">Voltar para o Login</button>
+            </div>
+
+            <div id="bloco-biometria" class="bloco">
+                <img src="logo.png" style="width: 70px; border-radius: 50%; margin-bottom: 10px;" alt="Logo Kids">
+                <h2>Usar digital ou Face ID?</h2>
+                <p class="subtitulo" style="margin-bottom: 1.5rem;">No próximo acesso neste aparelho, entre sem digitar a senha.</p>
+                <button id="btn-ativar-bio" onclick="ativarBiometria()">Ativar agora</button>
+                <p id="mensagem-erro-bio" class="mensagem-erro"></p>
+                <button class="btn-secondary" onclick="pularBiometria()" style="margin-top: 12px; padding: 10px; font-size: 0.9rem;">Agora não</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splash-screen">
+        <img src="logo.png" alt="Carregando" class="splash-logo">
+        <p id="splash-texto">Autenticando e carregando...</p>
+    </div>
+
+    <!-- ===== MODAL DE ESCOLHA (parent / staff) ===== -->
+    <div id="modal-escolha">
+        <div class="modal-box">
+            <h3>Olá, <span id="nome-usuario-escolha">usuário</span>!</h3>
+            <p>Como você deseja acessar hoje?</p>
+            <button class="btn-escolha btn-pai" onclick="escolherPapel('parent')">👨‍👩‍👧 Acessar como Pai</button>
+            <button class="btn-escolha btn-equipe" onclick="escolherPapel('staff')">👥 Acessar como Equipe</button>
+        </div>
+    </div>
+
+
+   <!-- ===== MODAL DE CADASTRO ===== -->
+    <div id="modal-cadastro" class="modal">
+        <div class="modal-box" style="max-width: 420px; width: 90%; background: white; padding: 2rem 1.8rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: left; position: relative; max-height: 90vh; overflow-y: auto;">            
+            <h3 style="color: var(--primary); margin: 0 0 0.3rem 0; text-align: center;">Criar conta</h3>
+            <p style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem;">Preencha os campos abaixo para se registrar</p>
+            
+            <form id="form-cadastro" onsubmit="return false;">
+                <div class="input-group">
+                    <label>Nome de usuário *</label>
+                    <input type="text" id="cadastro-username" placeholder="ex: maria.silva" required style="text-transform: lowercase;">
+                </div>
+                <div class="input-group">
+                    <label>E-mail *</label>
+                    <input type="email" id="cadastro-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Senha (6 dígitos numéricos) *</label>
+                    <input type="password" id="cadastro-senha" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="10">
+                </div>
+                <div class="input-group">
+                    <label>Confirmar senha *</label>
+                    <input type="password" id="cadastro-confirma-senha" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="10">
+                </div>
+    
+                <!-- Termos -->
+                <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.5rem 0 1.2rem;">
+                    <input type="checkbox" id="cadastro-termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary);">
+                    <label for="cadastro-termos" style="font-size: 0.8rem; color: var(--text-light);">
+                        Concordo com os <a href="#" onclick="abrirTermos(); return false;" style="color:var(--primary); text-decoration:underline;">Termos de Uso</a>                        
+                    </label>
+                </div>
+    
+                <button type="button" id="btn-cadastrar" onclick="cadastrarNovoUsuario()" class="btn-primary" style="width: 100%; padding: 0.9rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s;">Criar conta</button>
+                <div id="mensagem-cadastro" style="margin-top: 1rem; font-size: 0.85rem; display: none; padding: 0.5rem; border-radius: 8px;"></div>
+                <button type="button" onclick="fecharModalCadastro()" class="btn-secondary" style="width: 100%; margin-top: 0.6rem; padding: 0.7rem; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-weight: 600; cursor: pointer;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Termos de Uso -->
+    <div id="modal-termos" class="modal">
+        <div class="modal-content">
+            <!--<button class="modal-close" onclick="fecharTermos()">&times;</button>-->            
+            <h3 style="color:var(--primary);">📜 Termos de Uso</h3>
+            <div style="font-size:0.9rem; line-height:1.6; color:var(--text-main);">
+                <p><strong>1. Aceitação dos Termos</strong><br>Ao criar uma conta no Kids Checkin, você concorda com todos os termos.</p>
+                <p><strong>2. Uso do Sistema</strong><br>O sistema é destinado exclusivamente ao controle de check-in de crianças em eventos da Igreja Videira de Jataí.</p>
+                <p><strong>3. Responsabilidades</strong><br>Os pais/responsáveis são responsáveis pela veracidade das informações cadastradas, assim como o mantimento dos dados atualizados. O Uso do campo de "Alergia" ou de "Necessidades Especiais" não tiram a responsabilidade dos pais/responsáveis sobre o aviso prévio presencial sobre casos mais graves, ou que necessitam de atenção especial.</p>
+                <p><strong>4. Privacidade</strong><br>Os dados inseridos, serão utilizados apenas para fins de gestão, comunicação interna, pastoreio e atividades dentro do ambiente dos Radicais Kids. Sendo expressamente proibido o compartilhamento ou exposição dos dados, por qualquer funcionário/equipe da Igreja Videira ou responsáveis pelo Sistema de Chekin, sem antes um termo autorizado pelos responsáveis.</p>
+                <p><strong>5. Anexos</strong><br>Fotos anexadas ou informações inseridas são exclusivamente para funcionamento interno da aplicação e gestão pastoral, jamais será útilizada para fins externos de publicidade ou exposição dos dados a terceiros.</p>
+                <p><strong>6. Alterações</strong><br>Os termos podem ser atualizados a qualquer momento, sem aviso prévio. Consulte a secretaria da igreja para mais informações.</p>
+                <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-light);">Última atualização: Julho/2026</p>
+            </div>
+            <!--<button class="btn-primary" onclick="fecharTermos()" style="margin-top:1rem; width:100%; justify-content:center;">Li e concordo</button>-->
+            <button class="btn-primary" onclick="fecharTermos()" style="margin-top:1rem; width:100%; justify-content:center;">Fechar</button>          
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/biometria.js"></script>
+    <script>
+        // ==================== CONFIGURAÇÃO ====================
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY, {
+            auth: {
+                persistSession: true,
+                storage: localStorage,
+                autoRefreshToken: true
+            }
+        });
+
+        let loginPendente = null;
+
+        function ehCelular() {
+            const ua = navigator.userAgent || '';
+            if (/Android|iPhone|iPad|iPod/i.test(ua)) return true;
+            if (navigator.maxTouchPoints > 1 && /Macintosh/i.test(ua)) return true;
+            return false;
+        }
+
+        // ==================== FUNÇÕES AUXILIARES ====================
+        function mudarTela(idBloco) {
+            document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
+            document.getElementById(idBloco).classList.add('ativo');
+            document.querySelectorAll('.mensagem-erro, .mensagem-sucesso').forEach(msg => msg.style.display = 'none');
+        }
+
+        function verificarEnter(event, contexto) {
+            if (event.key === "Enter") {
+                if (contexto === 'login') verificarLogin();
+                else if (contexto === 'recuperar') enviarRecuperacao();
+            }
+        }
+
+        function exibirErro(id, mensagem) {
+            const el = document.getElementById(id);
+            el.innerText = mensagem;
+            el.style.display = 'block';
+            el.style.color = 'var(--danger-text)';
+            el.style.background = '#fdf0ee';
+            el.style.borderColor = '#f5d6d2';
+        }
+
+        function exibirSucesso(mensagem) {
+            const el = document.getElementById('mensagem-erro');
+            el.style.color = 'var(--success-text)';
+            el.style.background = '#d1e7dd';
+            el.style.borderColor = '#b8d9c0';
+            el.innerText = mensagem;
+            el.style.display = 'block';
+        }
+
+        // ==================== CADASTRO DE PAI ====================
+        /*async function cadastrarPai() {
+            const email = document.getElementById('usuario-input').value.trim();
+            const senha = document.getElementById('senha-input').value.trim();
+            const erro = document.getElementById('mensagem-erro');
+
+            if (!email || !senha) {
+                exibirErro('mensagem-erro', 'Preencha e-mail e senha para criar sua conta.');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                exibirErro('mensagem-erro', 'Digite um e-mail válido.');
+                return;
+            }
+
+            if (senha.length < 6 || !/^\d+$/.test(senha)) {
+                exibirErro('mensagem-erro', 'A senha deve ter 6 dígitos numéricos.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-entrar');
+            btn.disabled = true;
+            btn.innerText = 'Criando...';
+            erro.style.display = 'none';
+
+            try {
+                const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            full_name: 'Pai/Mãe',
+                            role: 'parent'
+                        }
+                    }
+                });
+
+                if (signUpError) throw signUpError;
+
+                const userId = authData.user.id;
+                const { error: profileError } = await supabaseClient
+                    .from('kids_profiles')
+                    .insert({
+                        id: userId,
+                        role: 'parent'
+                    });
+
+                if (profileError && profileError.code !== '23505') {
+                    throw profileError;
+                }
+
+                exibirSucesso('Conta criada com sucesso! Redirecionando...');
+                setTimeout(() => {
+                    window.location.href = 'pais.html?t=' + Date.now();
+                }, 2000);
+
+            } catch (err) {
+                console.error(err);
+                exibirErro('mensagem-erro', 'Erro ao criar conta: ' + err.message);
+                btn.disabled = false;
+                btn.innerText = 'Entrar';
+            }
+        }*/
+
+        // ==================== CADASTRO DE PAI ====================
+        async function cadastrarPai() {
+            const email = document.getElementById('usuario-input').value.trim();
+            const senha = document.getElementById('senha-input').value.trim();
+            const erro = document.getElementById('mensagem-erro');
+        
+            if (!email || !senha) {
+                exibirErro('mensagem-erro', 'Preencha e-mail e senha para criar sua conta.');
+                return;
+            }
+        
+            if (!email.includes('@')) {
+                exibirErro('mensagem-erro', 'Digite um e-mail válido.');
+                return;
+            }
+        
+            if (senha.length < 6 || !/^\d+$/.test(senha)) {
+                exibirErro('mensagem-erro', 'A senha deve ter 6 dígitos numéricos.');
+                return;
+            }
+        
+            const btn = document.getElementById('btn-entrar');
+            btn.disabled = true;
+            btn.innerText = 'Verificando...';
+            erro.style.display = 'none';
+        
+            try {
+                // 1) Extrair nome de usuário (parte antes do @)
+                const usernameSugerido = email.split('@')[0].toLowerCase();
+        
+                // 2) Verificar se o e-mail ou username já existem na tabela kids_profiles
+                const { data: existentes, error: buscaError } = await supabaseClient
+                    .from('kids_profiles')
+                    .select('email, username')
+                    .or(`email.eq.${email},username.eq.${usernameSugerido}`)
+                    .maybeSingle();
+        
+                if (buscaError) {
+                    throw buscaError;
+                }
+        
+                if (existentes) {
+                    if (existentes.email === email) {
+                        exibirErro('mensagem-erro', 'Este e-mail já está cadastrado. Faça login ou recupere a senha.');
+                    } else if (existentes.username === usernameSugerido) {
+                        exibirErro('mensagem-erro', `O nome de usuário "${usernameSugerido}" já está em uso. Tente outro e-mail ou faça login.`);
+                    } else {
+                        exibirErro('mensagem-erro', 'Este e-mail ou nome de usuário já está cadastrado.');
+                    }
+                    btn.disabled = false;
+                    btn.innerText = 'Entrar';
+                    return;
+                }
+        
+                // 3) Criar usuário no Auth (se não existir)
+                btn.innerText = 'Criando conta...';
+                const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            full_name: 'Pai/Mãe',
+                            role: 'parent'
+                        }
+                    }
+                });
+        
+                if (signUpError) {
+                    if (signUpError.message.includes('already registered')) {
+                        exibirErro('mensagem-erro', 'Este e-mail já está cadastrado no sistema. Tente fazer login.');
+                    } else {
+                        throw signUpError;
+                    }
+                    btn.disabled = false;
+                    btn.innerText = 'Entrar';
+                    return;
+                }
+        
+                const userId = authData.user.id;
+        
+                // 4) Criar perfil na tabela kids_profiles (se não existir)
+                const { error: profileError } = await supabaseClient
+                    .from('kids_profiles')
+                    .insert({
+                        id: userId,
+                        email: email,
+                        username: usernameSugerido,
+                        role: 'parent'
+                    });
+        
+                if (profileError && profileError.code !== '23505') {
+                    throw profileError;
+                }
+        
+                // Sucesso
+                exibirSucesso('Conta criada com sucesso! Redirecionando...');
+                setTimeout(() => {
+                    window.location.href = 'pais.html?t=' + Date.now();
+                }, 2000);
+        
+            } catch (err) {
+                console.error(err);
+                exibirErro('mensagem-erro', 'Erro ao criar conta: ' + err.message);
+                btn.disabled = false;
+                btn.innerText = 'Entrar';
+            }
+        }
+
+      
+        // ==================== LOGIN ====================
+        async function verificarLogin() {
+            const entrada = document.getElementById('usuario-input').value.trim();
+            const senhaDigitada = document.getElementById('senha-input').value.trim();
+            const erro = document.getElementById('mensagem-erro');
+            const btn = document.getElementById('btn-entrar');
+        
+            if (!entrada || !senhaDigitada) {
+                exibirErro('mensagem-erro', 'Preencha o usuário/e-mail e a senha.');
+                return;
+            }
+        
+            btn.innerText = "Autenticando...";
+            btn.disabled = true;
+            erro.style.display = 'none';
+        
+            try {
+                let emailParaLogin = entrada;
+        
+                if (!entrada.includes('@')) {
+                    // Busca o e-mail associado ao username via RPC
+                    // (com RLS ativa, o usuário anônimo não pode ler kids_profiles diretamente)
+                    const { data: emailEncontrado, error: profileErr } = await supabaseClient
+                        .rpc('get_email_por_username', { p_username: entrada });
+        
+                    if (profileErr || !emailEncontrado) {
+                        exibirErro('mensagem-erro', 'Usuário não encontrado.');
+                        document.getElementById('senha-input').value = "";
+                        btn.innerText = "Entrar";
+                        btn.disabled = false;
+                        return;
+                    }
+        
+                    emailParaLogin = emailEncontrado;
+                }
+        
+                const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
+                    email: emailParaLogin,
+                    password: senhaDigitada
+                });
+        
+                if (loginError) {
+                    exibirErro('mensagem-erro', 'Usuário/e-mail ou senha incorretos.');
+                    document.getElementById('senha-input').value = "";
+                    btn.innerText = "Entrar";
+                    btn.disabled = false;
+                    return;
+                }
+        
+                const userId = loginData.user.id;
+        
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('kids_profiles')
+                    .select('role')
+                    .eq('id', userId)
+                    .maybeSingle();
+        
+                if (profileError || !profile) {
+                    const { error: insertError } = await supabaseClient
+                        .from('kids_profiles')
+                        .insert({
+                            id: userId,
+                            role: 'parent'
+                        });
+                    if (insertError) {
+                        exibirErro('mensagem-erro', 'Erro ao criar perfil. Contate o suporte.');
+                        btn.innerText = "Entrar";
+                        btn.disabled = false;
+                        return;
+                    }
+                }
+        
+                const role = profile?.role || 'parent';
+                const nome = loginData.user.user_metadata?.full_name
+                    || (role === 'admin' ? 'Admin' : role === 'staff' ? 'Equipe' : 'Pai');
+
+                const podeBio = ehCelular() && await Biometria.plataformaDisponivel();
+                if (podeBio && !Biometria.cadastradaPara(emailParaLogin)) {
+                    loginPendente = {
+                        nome: nome,
+                        email: emailParaLogin,
+                        userId: userId,
+                        role: role
+                    };
+                    mudarTela('bloco-biometria');
+                    btn.innerText = "Entrar";
+                    btn.disabled = false;
+                    return;
+                }
+
+                seguirAposLogin(nome, role);
+                btn.innerText = "Entrar";
+                btn.disabled = false;
+        
+            } catch (err) {
+                console.error('Erro no login:', err);
+                exibirErro('mensagem-erro', 'Erro inesperado. Tente novamente.');
+                btn.innerText = "Entrar";
+                btn.disabled = false;
+            }
+        }
+
+        function seguirAposLogin(nome, role) {
+            if (role === 'admin') {
+                entrarNoPainel(nome || 'Admin', 'admin');
+            } else if (role === 'staff') {
+                entrarNoPainel(nome || 'Equipe', 'equipe');
+            } else if (role === 'parent') {
+                entrarNoPainel(nome || 'Pai', 'pais');
+            } else if (role === 'both') {
+                document.getElementById('nome-usuario-escolha').innerText = nome || 'usuário';
+                document.getElementById('modal-escolha').style.display = 'flex';
+            } else {
+                entrarNoPainel(nome || 'Pai', 'pais');
+            }
+        }
+
+        async function ativarBiometria() {
+            const erro = document.getElementById('mensagem-erro-bio');
+            const btn = document.getElementById('btn-ativar-bio');
+            if (!loginPendente) {
+                mudarTela('bloco-login');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Validando Segurança...";
+            erro.style.display = 'none';
+
+            try {
+                await Biometria.registrar({
+                    userId: loginPendente.userId,
+                    email: loginPendente.email,
+                    nome: loginPendente.nome
+                });
+                const pendente = loginPendente;
+                loginPendente = null;
+                seguirAposLogin(pendente.nome, pendente.role);
+            } catch (e) {
+                erro.innerText = e.name === 'NotAllowedError'
+                    ? "Registro cancelado. Você pode tentar de novo ou pular."
+                    : ("Não foi possível ativar: " + (e.message || e));
+                erro.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Ativar agora";
+            }
+        }
+
+        function pularBiometria() {
+            if (!loginPendente) {
+                mudarTela('bloco-login');
+                return;
+            }
+            const pendente = loginPendente;
+            loginPendente = null;
+            seguirAposLogin(pendente.nome, pendente.role);
+        }
+
+        async function loginComBiometria() {
+            const erro = document.getElementById('mensagem-erro');
+            const btn = document.getElementById('btn-biometria');
+            erro.style.display = 'none';
+            btn.disabled = true;
+            btn.innerText = "Validando Segurança...";
+
+            try {
+                const cadastro = await Biometria.autenticar();
+                const { data: { user } } = await supabaseClient.auth.getUser();
+
+                if (!user || (user.email || '').toLowerCase() !== (cadastro.email || '').toLowerCase()) {
+                    throw new Error("Sessão expirada. Entre com usuário e senha. A digital continua cadastrada neste aparelho.");
+                }
+
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('kids_profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                const role = (!profileError && profile && profile.role) ? profile.role : 'parent';
+                const nome = user.user_metadata?.full_name
+                    || (role === 'admin' ? 'Admin' : role === 'staff' ? 'Equipe' : 'Pai');
+
+                seguirAposLogin(nome, role);
+            } catch (e) {
+                exibirErro('mensagem-erro', e.name === 'NotAllowedError'
+                    ? "Leitura cancelada. Tente de novo ou entre com a senha."
+                    : (e.message || "Falha na biometria."));
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Entrar com digital / Face ID";
+            }
+        }
+
+        function desativarBiometria() {
+            Biometria.removerCadastro();
+            atualizarBotoesBiometria();
+        }
+
+        async function atualizarBotoesBiometria() {
+            const btnBio = document.getElementById('btn-biometria');
+            const btnRemover = document.getElementById('btn-remover-bio');
+            const ok = ehCelular() && await Biometria.plataformaDisponivel();
+            const tem = Biometria.temCadastro();
+            if (btnBio) btnBio.style.display = (ok && tem) ? 'block' : 'none';
+            if (btnRemover) btnRemover.style.display = (ok && tem) ? 'block' : 'none';
+        }
+
+        atualizarBotoesBiometria().then(function () {
+            if (ehCelular() && Biometria.temCadastro()) loginComBiometria();
+        });
+
+        // ==================== ESCOLHER PAPEL (modal) ====================
+        function escolherPapel(role) {
+            const url = role === 'staff' ? 'equipe.html' : 'pais.html';
+            document.getElementById('modal-escolha').style.display = 'none';
+            entrarNoPainel('', url);
+        }
+
+        // ==================== ENTRAR NO PAINEL ====================
+        function entrarNoPainel(nome, urlDestino) {
+            const telaLogin = document.getElementById('tela-login');
+            const splashScreen = document.getElementById('splash-screen');
+            document.getElementById('splash-texto').innerText = `Carregando...`;
+
+            telaLogin.style.opacity = '0';
+            setTimeout(() => {
+                telaLogin.style.display = 'none';
+                splashScreen.style.display = 'flex';
+                setTimeout(() => splashScreen.style.opacity = '1', 10);
+                setTimeout(() => {
+                    window.location.href = urlDestino + "?t=" + Date.now();
+                }, 1000);
+            }, 400);
+        }
+
+        // ==================== RECUPERAÇÃO DE SENHA ====================
+        async function enviarRecuperacao() {
+            const email = document.getElementById('rec-email').value.trim();
+            const btn = document.getElementById('btn-recuperar');
+            const erro = document.getElementById('mensagem-erro-rec');
+        
+            if (!email) {
+                exibirErro('mensagem-erro-rec', 'Informe seu e-mail cadastrado.');
+                return;
+            }
+        
+            btn.innerText = "Processando...";
+            btn.disabled = true;
+            erro.style.display = 'none';
+        
+            try {
+                const urlDestino = window.location.origin + "/domingokids/novasenha.html";
+                const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: urlDestino,
+                });
+                if (error) throw error;
+                
+                showToast('E-mail de recuperação enviado! Verifique sua caixa de entrada');
+                //exibirSucesso('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+                document.getElementById('rec-email').value = "";
+                mudarTela('bloco-login');
+            } catch (e) {
+                exibirErro('mensagem-erro-rec', 'Erro: ' + e.message);
+            } finally {
+                btn.innerText = "Enviar Link";
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== ABRIR/FECHAR MODAL CADASTRO ====================
+        function abrirModalCadastro() {
+            document.getElementById('modal-cadastro').style.display = 'flex';
+            // Limpar campos e mensagens
+            document.getElementById('cadastro-username').value = '';
+            document.getElementById('cadastro-email').value = '';
+            document.getElementById('cadastro-senha').value = '';
+            document.getElementById('cadastro-confirma-senha').value = '';
+            document.getElementById('cadastro-termos').checked = false;
+            const msg = document.getElementById('mensagem-cadastro');
+            msg.style.display = 'none';
+            msg.className = '';
+        }
+        
+        function fecharModalCadastro() {
+            document.getElementById('modal-cadastro').style.display = 'none';
+        }
+
+        
+      // ==================== CADASTRAR NOVO USUÁRIO (MODAL) ====================
+        async function cadastrarNovoUsuario() {
+            const username = document.getElementById('cadastro-username').value.trim().toLowerCase();
+            const email = document.getElementById('cadastro-email').value.trim();
+            const senha = document.getElementById('cadastro-senha').value.trim();
+            const confirmaSenha = document.getElementById('cadastro-confirma-senha').value.trim();
+            const termos = document.getElementById('cadastro-termos').checked;
+            const msg = document.getElementById('mensagem-cadastro');
+            const btn = document.getElementById('btn-cadastrar');
+        
+            // Limpar mensagem anterior
+            msg.style.display = 'none';
+            msg.className = '';
+        
+            // Validações
+            if (!username || !email || !senha || !confirmaSenha) {
+                exibirMsgCadastro('Preencha todos os campos.', 'error');
+                return;
+            }
+        
+            if (username.length < 3) {
+                exibirMsgCadastro('O nome de usuário deve ter pelo menos 3 caracteres.', 'error');
+                return;
+            }
+        
+            if (!email.includes('@')) {
+                exibirMsgCadastro('Digite um e-mail válido.', 'error');
+                return;
+            }
+        
+            if (senha.length < 6 || !/^\d+$/.test(senha)) {
+                exibirMsgCadastro('A senha deve ter 6 dígitos numéricos.', 'error');
+                return;
+            }
+        
+            if (senha !== confirmaSenha) {
+                exibirMsgCadastro('As senhas não coincidem.', 'error');
+                return;
+            }
+        
+            if (!termos) {
+                exibirMsgCadastro('Você precisa concordar com os termos de uso.', 'error');
+                return;
+            }
+        
+            // Verificar se username ou email já existem
+            // (via RPC, pois com RLS ativa o usuário anônimo não pode ler kids_profiles diretamente)
+            btn.disabled = true;
+            btn.innerText = 'Verificando...';
+        
+            try {
+                const { data: check, error: buscaError } = await supabaseClient
+                    .rpc('check_cadastro_disponivel', { p_username: username, p_email: email });
+        
+                if (buscaError) throw buscaError;
+        
+                if (check.username_ocupado) {
+                    exibirMsgCadastro(`O nome de usuário "${username}" já está em uso.`, 'error');
+                    btn.disabled = false;
+                    btn.innerText = 'Criar conta';
+                    return;
+                }
+        
+                if (check.email_ocupado) {
+                    exibirMsgCadastro('Este e-mail já está cadastrado.', 'error');
+                    btn.disabled = false;
+                    btn.innerText = 'Criar conta';
+                    return;
+                }
+        
+                // Criar usuário no Auth
+                // A trigger "on_auth_user_created" (função handle_new_user) já se encarrega
+                // de criar a linha correspondente em public.kids_profiles automaticamente,
+                // lendo username, full_name e role a partir destes metadados.
+                // NÃO fazer insert manual aqui — evita erro 23505 (duplicate key).
+                btn.innerText = 'Criando conta...';
+                const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            full_name: username,
+                            role: 'parent',
+                            username: username
+                        }
+                    }
+                });
+        
+                if (signUpError) {
+                    if (signUpError.message.includes('already registered')) {
+                        exibirMsgCadastro('Este e-mail já está cadastrado.', 'error');
+                    } else {
+                        throw signUpError;
+                    }
+                    btn.disabled = false;
+                    btn.innerText = 'Criar conta';
+                    return;
+                }
+        
+                // Sucesso — o perfil já foi criado pela trigger no banco
+                exibirMsgCadastro('Conta criada com sucesso! Redirecionando...', 'success');
+                btn.innerText = 'Concluído';
+        
+                setTimeout(() => {
+                    window.location.href = 'pais.html?t=' + Date.now();
+                }, 2000);
+        
+            } catch (err) {
+                console.error(err);
+                exibirMsgCadastro('Erro ao criar conta: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.innerText = 'Criar conta';
+            }
+        }
+                
+        // ==================== EXIBIR MENSAGEM NO MODAL ====================
+        function exibirMsgCadastro(mensagem, tipo = 'error') {
+            const msg = document.getElementById('mensagem-cadastro');
+            msg.style.display = 'block';
+            msg.innerText = mensagem;
+            msg.style.color = tipo === 'error' ? 'var(--danger-text)' : 'var(--success-text)';
+            msg.style.background = tipo === 'error' ? '#fdf0ee' : '#d1e7dd';
+            msg.style.border = '1px solid ' + (tipo === 'error' ? '#f5d6d2' : '#b8d9c0');
+            msg.className = tipo === 'error' ? 'mensagem-erro' : 'mensagem-sucesso';
+        }
+
+        function abrirTermos() {
+            document.getElementById('modal-termos').style.display = 'flex';
+        }
+        function fecharTermos() {
+            document.getElementById('modal-termos').style.display = 'none';
+        }
+        
+        // ==================== INICIALIZAÇÃO ====================
+        /*(async () => {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabaseClient
+                    .from('kids_profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                if (!profile) {
+                    await supabaseClient.from('kids_profiles').insert({
+                        id: user.id,
+                        role: 'parent'
+                    });
+                }
+                window.location.href = 'pais.html?t=' + Date.now()
+            }
+        })();*/
+    </script>
+
+</body>
+</html>
