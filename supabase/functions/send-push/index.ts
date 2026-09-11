@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
     const { data: parents } = await admin
       .from('kids_profiles')
       .select('id')
-      .in('role', ['parent', 'both']);
+      .in('role', ['parent', 'both', 'staff', 'admin']);
     userIds = (parents || []).map((row) => row.id);
     if (!payload.body) body = '';
   }
