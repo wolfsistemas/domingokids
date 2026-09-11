@@ -13,3 +13,30 @@ const VAPID_PUBLIC_KEY = 'BJ4YbI1bdeeM_GzNCpS-nq1lA1eeGEdahIn09pmL4qchZ92AIsURlL
 
 // Upload de imagens: usa a Edge Function `imgbb-upload` (chave mantida no servidor).
 
+// Encerra a sessão e volta para a tela de login.
+// Se houver biometria cadastrada, guarda um backup dos tokens (sessão local)
+// para o login rápido por biometria continuar funcionando no próximo acesso.
+async function encerrarSessao(destino) {
+    const alvo = destino || 'index.html';
+    try {
+        const temBio = !!localStorage.getItem('dk_webauthn');
+        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+            if (temBio) {
+                const { data } = await supabaseClient.auth.getSession();
+                if (data && data.session) {
+                    localStorage.setItem('dk_sessao_bio', JSON.stringify({
+                        access_token: data.session.access_token,
+                        refresh_token: data.session.refresh_token,
+                        email: (data.session.user && data.session.user.email) || '',
+                        salvoEm: new Date().toISOString()
+                    }));
+                }
+                await supabaseClient.auth.signOut({ scope: 'local' });
+            } else {
+                await supabaseClient.auth.signOut();
+            }
+        }
+    } catch (e) {}
+    window.location.href = alvo + '?t=' + Date.now() + '&logout=1';
+}
+

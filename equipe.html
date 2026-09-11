@@ -2589,7 +2589,7 @@
             } catch (e) {}
             return '';
         }
-        async function logout() { try { await supabaseClient.auth.signOut(); } catch (e) {} window.location.href = "index.html?t=" + Date.now(); }
+        async function logout() { await encerrarSessao('index.html'); }
 
         // ========== AUTOMATIZAR SESSÃO DO DOMINGO ==========
         function getProximoDomingo() {

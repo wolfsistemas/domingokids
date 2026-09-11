@@ -960,6 +960,7 @@
                 }
         
                 const userId = loginData.user.id;
+                Biometria.limparSessao();
         
                 const { data: profile, error: profileError } = await supabaseClient
                     .from('kids_profiles')
@@ -1082,9 +1083,28 @@
 
             try {
                 const cadastro = await Biometria.autenticar();
-                const { data: { user } } = await supabaseClient.auth.getUser();
+                const emailCadastro = (cadastro.email || '').toLowerCase();
 
-                if (!user || (user.email || '').toLowerCase() !== (cadastro.email || '').toLowerCase()) {
+                let user = (await supabaseClient.auth.getUser()).data.user;
+
+                // Sessão foi encerrada (logout): restaura os tokens guardados
+                // após validar a digital, para o login rápido funcionar.
+                if (!user) {
+                    const backup = Biometria.lerSessao();
+                    if (backup && backup.access_token && backup.refresh_token
+                        && (backup.email || '').toLowerCase() === emailCadastro) {
+                        const { error: setErr } = await supabaseClient.auth.setSession({
+                            access_token: backup.access_token,
+                            refresh_token: backup.refresh_token
+                        });
+                        if (!setErr) {
+                            user = (await supabaseClient.auth.getUser()).data.user;
+                            Biometria.limparSessao();
+                        }
+                    }
+                }
+
+                if (!user || (user.email || '').toLowerCase() !== emailCadastro) {
                     throw new Error("Sessão expirada. Entre com usuário e senha. A digital continua cadastrada neste aparelho.");
                 }
 
@@ -1124,7 +1144,10 @@
         }
 
         atualizarBotoesBiometria().then(function () {
-            if (ehCelular() && Biometria.temCadastro()) loginComBiometria();
+            // Após um logout explícito, não reentra sozinho com a biometria.
+            // No próximo acesso (sem o parâmetro), o login rápido volta a agir.
+            const acabouDeSair = new URLSearchParams(window.location.search).has('logout');
+            if (!acabouDeSair && ehCelular() && Biometria.temCadastro()) loginComBiometria();
         });
 
         // ==================== ESCOLHER PAPEL (modal) ====================

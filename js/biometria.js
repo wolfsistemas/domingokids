@@ -1,5 +1,6 @@
 const Biometria = (function () {
     const STORAGE_KEY = 'dk_webauthn';
+    const SESSION_KEY = 'dk_sessao_bio';
     const RP_NAME = 'Kids Checkin';
 
     function bufferToBase64url(buffer) {
@@ -72,6 +73,35 @@ const Biometria = (function () {
 
     function removerCadastro() {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(SESSION_KEY);
+    }
+
+    // Guarda os tokens da sessão para o login rápido por biometria.
+    // Só guarda se houver biometria cadastrada neste aparelho.
+    function salvarSessao(session) {
+        if (!temCadastro()) return;
+        if (!session || !session.access_token || !session.refresh_token) return;
+        try {
+            localStorage.setItem(SESSION_KEY, JSON.stringify({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                email: (session.user && session.user.email) || '',
+                salvoEm: new Date().toISOString()
+            }));
+        } catch (e) {}
+    }
+
+    function lerSessao() {
+        try {
+            const raw = localStorage.getItem(SESSION_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function limparSessao() {
+        localStorage.removeItem(SESSION_KEY);
     }
 
     async function registrar({ userId, email, nome }) {
@@ -147,6 +177,9 @@ const Biometria = (function () {
         lerCadastro,
         registrar,
         autenticar,
+        salvarSessao,
+        lerSessao,
+        limparSessao,
         removerCadastro
     };
 })();       

@@ -1262,8 +1262,7 @@
 
         
         async function logout() {
-            try { await supabaseClient.auth.signOut(); } catch (e) {}
-            window.location.href = "index.html?t=" + Date.now();
+            await encerrarSessao('index.html');
         }
 
         // Inicializar
