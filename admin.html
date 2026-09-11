@@ -804,6 +804,14 @@
             const novoRole = document.getElementById('select-role').value;
             const userId = usuarioEditando.id;
 
+            if (usuarioEditando.role === 'admin' && novoRole !== 'admin') {
+                const outrosAdmins = (listaUsuarios || []).filter(u => u.role === 'admin' && u.id !== userId).length;
+                if (outrosAdmins === 0) {
+                    showToast('Não é possível rebaixar o último administrador.', 'error');
+                    return;
+                }
+            }
+
             const { error } = await supabaseClient
                 .from('kids_profiles')
                 .update({ role: novoRole })
@@ -853,6 +861,14 @@
             if (user && user.id === usuarioExcluindo.id) {
                 showToast('Você não pode excluir o próprio usuário.', 'error');
                 return;
+            }
+
+            if (usuarioExcluindo.role === 'admin') {
+                const outrosAdmins = (listaUsuarios || []).filter(u => u.role === 'admin' && u.id !== usuarioExcluindo.id).length;
+                if (outrosAdmins === 0) {
+                    showToast('Não é possível excluir o último administrador.', 'error');
+                    return;
+                }
             }
 
             const { data: sessionData } = await supabaseClient.auth.getSession();

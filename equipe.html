@@ -1055,57 +1055,61 @@
         }
         
        async function loadSessions() {
-                // Buscar todas as sessões (para popular o dropdown)
-                const { data: todas, error } = await supabaseClient
-                    .from('kids_sessions')
-                    .select('id, name, session_date, is_active')
-                    .order('session_date', { ascending: false });
-            
-                if (error) {
-                    console.error('Erro ao carregar sessões:', error);
-                    document.getElementById('sessionSelect').innerHTML = '<option>Erro ao carregar</option>';
-                    return;
+            const select = document.getElementById('sessionSelect');
+
+            // So gerencia a sessao do domingo no proprio domingo, para nao
+            // criar/ativar a sessao da proxima semana nem desativar a atual
+            // durante a semana.
+            let sessionId = null;
+            if (new Date().getDay() === 0) {
+                try {
+                    sessionId = await getOrCreateSundaySession();
+                } catch (e) {
+                    console.error('Erro ao preparar sessão do domingo:', e);
                 }
-            
-                // Popular o dropdown
-                const select = document.getElementById('sessionSelect');
-                select.innerHTML = '';
-                if (todas && todas.length > 0) {
-                    todas.forEach(s => {
-                        const dataFormatada = new Date(s.session_date).toLocaleDateString('pt-BR');
-                        const label = `${s.name} ${s.is_active ? '🟢' : ''}`;
-                        const option = document.createElement('option');
-                        option.value = s.id;
-                        option.textContent = label;
-                        if (s.is_active) option.selected = true;
-                        select.appendChild(option);
-                    });
-                } else {
-                    select.innerHTML = '<option value="">Nenhuma sessão</option>';
-                }
-            
-                // === AUTOMÁTICO: garantir sessão do domingo ===
-                const sessionId = await getOrCreateSundaySession();
-                if (sessionId) {
-                    // Se a sessão do domingo não estiver selecionada, seleciona
-                    if (select.value !== sessionId) {
-                        select.value = sessionId;
-                    }
-                    currentSessionId = sessionId;
-                } else {
-                    // Fallback: usar a primeira sessão da lista
-                    if (todas && todas.length > 0) {
-                        currentSessionId = todas[0].id;
-                        select.value = currentSessionId;
-                    } else {
-                        currentSessionId = null;
-                        showToast('Nenhuma sessão disponível. Crie uma manualmente.', 'error');
-                    }
-                }
-            
-                // Carregar lista de presentes após definir a sessão
-                await loadPresentList();
             }
+
+            const { data: todas, error } = await supabaseClient
+                .from('kids_sessions')
+                .select('id, name, session_date, is_active')
+                .order('session_date', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao carregar sessões:', error);
+                select.innerHTML = '<option>Erro ao carregar</option>';
+                return;
+            }
+
+            // Popular o dropdown
+            select.innerHTML = '';
+            if (todas && todas.length > 0) {
+                todas.forEach(s => {
+                    const label = `${s.name} ${s.is_active ? '🟢' : ''}`;
+                    const option = document.createElement('option');
+                    option.value = s.id;
+                    option.textContent = label;
+                    if (s.id === sessionId || (!sessionId && s.is_active)) option.selected = true;
+                    select.appendChild(option);
+                });
+            } else {
+                select.innerHTML = '<option value="">Nenhuma sessão</option>';
+            }
+
+            if (sessionId) {
+                currentSessionId = sessionId;
+                select.value = sessionId;
+            } else if (todas && todas.length > 0) {
+                const escolhida = todas.find(s => s.is_active) || todas[0];
+                currentSessionId = escolhida.id;
+                select.value = currentSessionId;
+            } else {
+                currentSessionId = null;
+                showToast('Nenhuma sessão disponível. Crie uma manualmente.', 'error');
+            }
+
+            // Carregar lista de presentes após definir a sessão
+            await loadPresentList();
+        }
 
         async function changeSession() {
             currentSessionId = document.getElementById('sessionSelect').value;
@@ -2605,38 +2609,55 @@
         
         async function getOrCreateSundaySession() {
             const dataDomingo = getProximoDomingo();
-            const dataString = dataDomingo.toISOString().split('T')[0]; // YYYY-MM-DD
-        
-            // 1) Verificar se já existe uma sessão ativa para este domingo
+            const ano = dataDomingo.getFullYear();
+            const mes = String(dataDomingo.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataDomingo.getDate()).padStart(2, '0');
+            const dataString = `${ano}-${mes}-${dia}`; // YYYY-MM-DD (horario local)
+
+            // 1) Verificar se ja existe alguma sessao para este domingo
             const { data: existente, error: buscaError } = await supabaseClient
                 .from('kids_sessions')
                 .select('id, name, is_active')
                 .eq('session_date', dataString)
-                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
                 .maybeSingle();
-        
+
             if (buscaError) {
-                console.error('Erro ao buscar sessão do domingo:', buscaError);
+                console.error('Erro ao buscar sessao do domingo:', buscaError);
                 return null;
             }
-        
+
             if (existente) {
-                // Já existe – usar essa
+                // Ja existe: garante que esteja ativa, sem criar duplicata
+                if (!existente.is_active) {
+                    await supabaseClient
+                        .from('kids_sessions')
+                        .update({ is_active: false })
+                        .eq('is_active', true)
+                        .neq('id', existente.id);
+                    const { error: ativarError } = await supabaseClient
+                        .from('kids_sessions')
+                        .update({ is_active: true })
+                        .eq('id', existente.id);
+                    if (ativarError) {
+                        console.error('Erro ao ativar sessao do domingo:', ativarError);
+                    }
+                }
                 return existente.id;
             }
-        
-            // 2) Não existe → criar nova sessão
-            // Desativar todas as outras sessões ativas (para não ter duas ativas)
+
+            // 2) Nao existe -> desativar as outras e criar a nova
             const { error: desativarError } = await supabaseClient
                 .from('kids_sessions')
                 .update({ is_active: false })
                 .eq('is_active', true);
-        
+
             if (desativarError) {
-                console.error('Erro ao desativar sessões antigas:', desativarError);
+                console.error('Erro ao desativar sessoes antigas:', desativarError);
             }
-        
-            // Criar a nova sessão
+
+            // Criar a nova sessao
             const nomeSessao = `Culto Kids - ${dataString.split('-').reverse().join('/')}`;
             const { data: nova, error: criarError } = await supabaseClient
                 .from('kids_sessions')
@@ -2648,12 +2669,12 @@
                 })
                 .select()
                 .single();
-        
+
             if (criarError) {
-                console.error('Erro ao criar sessão do domingo:', criarError);
+                console.error('Erro ao criar sessao do domingo:', criarError);
                 return null;
             }
-        
+
             return nova.id;
         }
 
