@@ -58,3 +58,50 @@ async function encerrarSessao(destino) {
     window.location.href = alvo + '?t=' + Date.now() + '&logout=1';
 }
 
+// ==================== DATAS (fuso fixo America/Sao_Paulo) ====================
+// Todo o app trata data/hora no fuso de Sao Paulo, para nao depender do fuso
+// configurado no aparelho do usuario.
+const FUSO_SP = 'America/Sao_Paulo';
+
+// Partes numericas de uma data (agora, se valor omitido) no fuso de Sao Paulo.
+function partesSP(valor) {
+    const d = valor ? new Date(valor) : new Date();
+    const out = {};
+    new Intl.DateTimeFormat('en-CA', {
+        timeZone: FUSO_SP,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    }).formatToParts(d).forEach(function (p) { out[p.type] = p.value; });
+    return {
+        ano: Number(out.year),
+        mes: Number(out.month),
+        dia: Number(out.day),
+        hora: Number(out.hour),
+        minuto: Number(out.minute),
+        segundo: Number(out.second)
+    };
+}
+
+// Dia da semana em Sao Paulo (0 = domingo ... 6 = sabado).
+function diaSemanaSP(valor) {
+    const p = partesSP(valor);
+    return new Date(Date.UTC(p.ano, p.mes - 1, p.dia, 12)).getUTCDay();
+}
+
+// Instante UTC equivalente a 00:00 de Sao Paulo (Brasil = UTC-3, sem horario de verao).
+function meiaNoiteSP(ano, mes, dia) {
+    return new Date(Date.UTC(ano, mes - 1, dia, 3, 0, 0));
+}
+
+// Formata data/hora no fuso de Sao Paulo. Strings "YYYY-MM-DD" (somente data)
+// sao tratadas sem deslocamento de fuso.
+function formatarDataSP(valor, opcoes) {
+    if (!valor) return '';
+    const opts = Object.assign({ timeZone: FUSO_SP }, opcoes || {});
+    if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+        const p = valor.split('-').map(Number);
+        return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).toLocaleDateString('pt-BR', opts);
+    }
+    return new Date(valor).toLocaleString('pt-BR', opts);
+}
+

@@ -41,7 +41,7 @@
     <meta name="twitter:description" content="Painel dos pais do Domingo Kids. Acompanhe o check-in das crianças.">
     <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
 
-    <script src="config.js?v=3"></script>
+    <script src="config.js?v=4"></script>
     <script src="js/push.js"></script>
     <style>
         * {
@@ -984,7 +984,7 @@
                 if (lastCheckin && lastCheckin.length > 0) {
                     const ci = lastCheckin[0];
                     const status = ci.checked_out_at 
-                        ? `<span style="color: #059669;">✓ Saída: ${new Date(ci.checked_out_at).toLocaleString()}</span>`
+                        ? `<span style="color: #059669;">✓ Saída: ${formatarDataSP(ci.checked_out_at)}</span>`
                         : `<span style="color: #2563eb; font-weight: 500;">● ATIVO</span>`;
                     html += `
                         <div style="border-bottom: 1px solid #eef2ff; padding-bottom: 0.6rem;">
@@ -1033,7 +1033,7 @@
                 historyDiv.innerHTML = checkins.map(ci => `
                     <div class="history-item-modal">
                         ✅ <strong>${escapeHtml(ci.child?.name || '')}</strong> - ${escapeHtml(ci.session?.name || '')}
-                        ${!ci.checked_out_at ? ' <span style="color:#2563eb;">(ATIVO)</span>' : ` - Saída: ${new Date(ci.checked_out_at).toLocaleTimeString()}`}
+                        ${!ci.checked_out_at ? ' <span style="color:#2563eb;">(ATIVO)</span>' : ` - Saída: ${formatarDataSP(ci.checked_out_at, { hour: '2-digit', minute: '2-digit' })}`}
                     </div>
                 `).join('');
             } else {

@@ -46,7 +46,7 @@
     <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
 
     
-    <script src="config.js?v=3"></script>
+    <script src="config.js?v=4"></script>
     <script src="js/push.js"></script>
 
     
@@ -1061,7 +1061,7 @@
             // criar/ativar a sessao da proxima semana nem desativar a atual
             // durante a semana.
             let sessionId = null;
-            if (new Date().getDay() === 0) {
+            if (diaSemanaSP() === 0) {
                 try {
                     sessionId = await getOrCreateSundaySession();
                 } catch (e) {
@@ -1360,10 +1360,10 @@
             const parts = String(birthDateStr).split('-').map(Number);
             if (parts.length !== 3 || parts.some(isNaN)) return 0;
             const [by, bm, bd] = parts;
-            const today = new Date();
-            let age = today.getFullYear() - by;
-            const m = (today.getMonth() + 1) - bm;
-            if (m < 0 || (m === 0 && today.getDate() < bd)) age--;
+            const hoje = partesSP();
+            let age = hoje.ano - by;
+            const m = hoje.mes - bm;
+            if (m < 0 || (m === 0 && hoje.dia < bd)) age--;
             return age;
         }
 
@@ -1373,10 +1373,10 @@
             const parts = String(birthDateStr).split('-').map(Number);
             if (parts.length !== 3 || parts.some(isNaN)) return false;
             const bm = parts[1], bd = parts[2];
-            const hoje = new Date();
+            const p = partesSP();
             for (let d = 0; d <= 6; d++) {
-                const dia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + d);
-                if (dia.getMonth() + 1 === bm && dia.getDate() === bd) return true;
+                const dia = new Date(Date.UTC(p.ano, p.mes - 1, p.dia + d, 12));
+                if (dia.getUTCMonth() + 1 === bm && dia.getUTCDate() === bd) return true;
             }
             return false;
         }
@@ -1855,7 +1855,7 @@
                             <div class="present-info">
                                 <div class="present-name" style="font-size:0.9rem;">${birthdayIcon}${escapeHtml(c.child.name)} ${isVisitor ? `<span class="badge" style="background:var(--accent); color:#fff;">visitante</span>` : ''} ${c.badge_number ? `<span class="badge">🏷️ ${escapeHtml(c.badge_number)}</span>` : ''} ${c.child.allergies ? '<span class="badge">⚠️</span>' : ''}</div>
                                 <div class="present-time" style="font-size:0.7rem; color:var(--text-light);">
-                                    Check‑in: ${new Date(c.checked_in_at).toLocaleTimeString()}
+                                    Check‑in: ${formatarDataSP(c.checked_in_at, { hour: '2-digit', minute: '2-digit' })}
                                     ${c.room !== 'todos' && currentRoomFilter === 'todos' ? ` · 📌 Sala: ${escapeHtml(c.room)}` : ''}
                                 </div>
                             </div>
@@ -2160,9 +2160,9 @@
             carregarSessoesSelect();
             carregarCriancasSelect();
             // Definir mês atual no input
-            const hoje = new Date();
-            document.getElementById('relMesInput').value = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
-            document.getElementById('relAnoInput').value = hoje.getFullYear();
+            const hoje = partesSP();
+            document.getElementById('relMesInput').value = hoje.ano + '-' + String(hoje.mes).padStart(2,'0');
+            document.getElementById('relAnoInput').value = hoje.ano;
             document.getElementById('reportModal').style.display = 'flex';
         }
         
@@ -2268,8 +2268,8 @@
                             ${(checkins || []).map(c => {
                                 const idade = c.child.birth_date ? `${calcularIdade(c.child.birth_date)} anos` : '';
                                 const alergias = c.child.allergies || 'Nenhuma';
-                                const checkin = new Date(c.checked_in_at).toLocaleString('pt-BR');
-                                const checkout = c.checked_out_at ? new Date(c.checked_out_at).toLocaleString('pt-BR') : 'Ainda presente';
+                                const checkin = formatarDataSP(c.checked_in_at);
+                                const checkout = c.checked_out_at ? formatarDataSP(c.checked_out_at) : 'Ainda presente';
                                 return `<tr>
                                     <td>${escapeHtml(c.child.name)}${c.child.is_visitor ? ' <span style="font-size:0.75em;color:#b9824f;">(visitante)</span>' : ''}</td>
                                     <td>${idade}</td>
@@ -2289,7 +2289,7 @@
                          <h4 style="font-size: 0.7rem;"> Juvenis</h4>
                          ${[3].map(i => `<div style="font-size: 11px; margin:3px 0;"><span>Líder 1: _____________________________ Líder 2: _____________________________ Auxiliar: _____________________________ </span></div>`).join('')}
                     </div>     
-                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="footer">Relatório gerado em ${formatarDataSP(new Date())}</div>
                 </div>
             `;
         
@@ -2305,8 +2305,8 @@
                 return;
             }
             const [ano, mes] = mesAno.split('-').map(Number);
-            const dataInicio = new Date(ano, mes-1, 1);
-            const dataFim = new Date(ano, mes, 1); // início do próximo mês (exclusivo)
+            const dataInicio = meiaNoiteSP(ano, mes, 1);
+            const dataFim = meiaNoiteSP(mes === 12 ? ano + 1 : ano, mes === 12 ? 1 : mes + 1, 1);
         
             // Buscar check-ins do mês
             let query = supabaseClient
@@ -2346,7 +2346,7 @@
                     <div class="header">
                         <img src="logo.png" alt="Logo">
                         <h1>Relatório Mensal</h1>
-                        <p>${new Date(ano, mes-1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })} - ${salaFiltro === 'todos' ? 'Todas as salas' : `Sala ${salaFiltro}`}</p>
+                        <p>${formatarDataSP(`${ano}-${String(mes).padStart(2,'0')}-01`, { month: 'long', year: 'numeric' })} - ${salaFiltro === 'todos' ? 'Todas as salas' : `Sala ${salaFiltro}`}</p>
                     </div>
                     <div class="stats-grid">
                         <div class="stat-card"><div class="stat-number">${totalCriancas}</div><div class="stat-label">Total de crianças</div></div>
@@ -2365,7 +2365,7 @@
                             `).join('')}
                         </tbody>
                     </table>
-                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="footer">Relatório gerado em ${formatarDataSP(new Date())}</div>
                 </div>
             `;
         
@@ -2457,7 +2457,7 @@
                             `).join('')}
                         </tbody>
                     </table>
-                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="footer">Relatório gerado em ${formatarDataSP(new Date())}</div>
                 </div>
             `;
         
@@ -2526,7 +2526,7 @@
                         <h1>Relatório Individual</h1>
                         <p>${escapeHtml(child.name)} ${child.birth_date ? `- ${formatDate(child.birth_date)}` : ''}</p>
                         ${family.father_name || family.mother_name ? `<p style="font-size:0.8rem;">Responsáveis: ${escapeHtml(family.father_name) || ''} ${family.mother_name ? `& ${escapeHtml(family.mother_name)}` : ''}</p>` : ''}
-                        ${dataInicio && dataFim ? `<p>Período: ${new Date(dataInicio).toLocaleDateString('pt-BR')} a ${new Date(dataFim).toLocaleDateString('pt-BR')}</p>` : '<p>Todos os registros</p>'}
+                        ${dataInicio && dataFim ? `<p>Período: ${formatarDataSP(dataInicio)} a ${formatarDataSP(dataFim)}</p>` : '<p>Todos os registros</p>'}
                     </div>
                     <div class="stats-grid">
                         <div class="stat-card"><div class="stat-number">${totalRegistros}</div><div class="stat-label">Total de check-ins</div></div>
@@ -2538,16 +2538,16 @@
                         <tbody>
                             ${(checkins || []).map(c => `
                                 <tr>
-                                    <td>${new Date(c.checked_in_at).toLocaleDateString('pt-BR')}</td>
+                                    <td>${formatarDataSP(c.checked_in_at, { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                                     <td>${escapeHtml(c.session?.name || 'Sessão')}</td>
-                                    <td>${new Date(c.checked_in_at).toLocaleString('pt-BR')}</td>
-                                    <td>${c.checked_out_at ? new Date(c.checked_out_at).toLocaleString('pt-BR') : 'Ainda presente'}</td>
+                                    <td>${formatarDataSP(c.checked_in_at)}</td>
+                                    <td>${c.checked_out_at ? formatarDataSP(c.checked_out_at) : 'Ainda presente'}</td>
                                     <td>${escapeHtml(c.room || 'Não definida')}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
-                    <div class="footer">Relatório gerado em ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="footer">Relatório gerado em ${formatarDataSP(new Date())}</div>
                 </div>
             `;
             gerarPDFComHtml(html, `DK_${child.name}`);
@@ -2597,22 +2597,15 @@
 
         // ========== AUTOMATIZAR SESSÃO DO DOMINGO ==========
         function getProximoDomingo() {
-            const hoje = new Date();
-            const dia = hoje.getDay(); // 0 = domingo
+            const dia = diaSemanaSP(); // 0 = domingo
             const diff = dia === 0 ? 0 : 7 - dia;
-            const proximoDomingo = new Date(hoje);
-            proximoDomingo.setDate(hoje.getDate() + diff);
-            // Ajustar para meia-noite (para comparar apenas a data)
-            proximoDomingo.setHours(0, 0, 0, 0);
-            return proximoDomingo;
+            const p = partesSP();
+            const d = new Date(Date.UTC(p.ano, p.mes - 1, p.dia + diff, 12));
+            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
         }
         
         async function getOrCreateSundaySession() {
-            const dataDomingo = getProximoDomingo();
-            const ano = dataDomingo.getFullYear();
-            const mes = String(dataDomingo.getMonth() + 1).padStart(2, '0');
-            const dia = String(dataDomingo.getDate()).padStart(2, '0');
-            const dataString = `${ano}-${mes}-${dia}`; // YYYY-MM-DD (horario local)
+            const dataString = getProximoDomingo(); // YYYY-MM-DD (horario de Sao Paulo)
 
             // 1) Verificar se ja existe alguma sessao para este domingo
             const { data: existente, error: buscaError } = await supabaseClient

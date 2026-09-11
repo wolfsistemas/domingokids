@@ -41,7 +41,7 @@
     <meta name="twitter:description" content="Administração do Domingo Kids. Igreja Videira de Jataí.">
     <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
 
-    <script src="config.js?v=3"></script>
+    <script src="config.js?v=4"></script>
     <script src="js/push.js"></script>
     <style>
         :root {
@@ -1005,7 +1005,7 @@
                 <div class="log-item">
                     <strong>${escapeHtml(l.titulo || l.chave)}</strong>
                     <div class="log-meta">${escapeHtml(l.corpo || '')}</div>
-                    <div class="log-meta">${escapeHtml(l.destinatarios)} envio(s) - ${escapeHtml(new Date(l.enviado_em).toLocaleString('pt-BR'))}</div>
+                    <div class="log-meta">${escapeHtml(l.destinatarios)} envio(s) - ${escapeHtml(formatarDataSP(l.enviado_em))}</div>
                 </div>
             `).join('');
         }
