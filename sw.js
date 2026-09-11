@@ -1,17 +1,13 @@
-const CACHE = 'domingokids-v2';
+const CACHE = 'domingokids-v3';
 const PRECACHE = [
+  './',
+  './index.html',
   './manifest.json',
-  './config.js',
-  './js/toast.js',
-  './js/pwa.js',
-  './js/push.js',
-  './js/biometria.js',
+  './offline.html',
   './icons/icon-192.png',
-  './icons/icon-512.png',
   './icons/icon-180.png',
   './icons/apple-touch-icon.png',
-  './logo.png',
-  './logo3.png'
+  './logo.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -30,77 +26,113 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function isNavegacao(request) {
+  return request.mode === 'navigate' ||
+    (request.method === 'GET' && request.headers.get('accept') && request.headers.get('accept').includes('text/html'));
+}
+
+function deveIgnorar(url) {
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return true;
+  return url.hostname.includes('supabase.co') ||
+    url.hostname.includes('googleapis.com') ||
+    url.pathname.includes('/auth/v1/') ||
+    url.pathname.includes('/functions/v1/');
+}
+
+function precisaRedePrimeiro(url) {
+  return url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.json');
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
 
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-
-  const isHtml = request.mode === 'navigate' || url.pathname.endsWith('.html');
-  if (isHtml) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('./index.html')))
-    );
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (e) {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(request, copy));
-        return response;
-      });
+  if (deveIgnorar(url)) return;
+
+  if (isNavegacao(request) || precisaRedePrimeiro(url)) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  event.respondWith(staleWhileRevalidate(request));
+});
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE);
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) cache.put(request, response.clone());
+    return response;
+  } catch (e) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    return await cache.match('./offline.html') || await cache.match('./index.html') || Response.error();
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  const network = fetch(request).then((response) => {
+    if (response && response.ok) cache.put(request, response.clone());
+    return response;
+  }).catch(() => undefined);
+  return cached || network || Response.error();
+}
+
+self.addEventListener('push', (event) => {
+  let data = {
+    title: 'Domingo Kids',
+    body: 'Você tem uma nova notificação.',
+    url: './pais.html'
+  };
+  try {
+    if (event.data) data = Object.assign(data, event.data.json());
+  } catch (e) {
+    try {
+      data.body = event.data.text();
+    } catch (err) {}
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-192.png',
+      lang: 'pt-BR',
+      vibrate: [120, 80, 120],
+      data: { url: data.url || './pais.html' }
     })
   );
 });
 
-self.addEventListener('push', (event) => {
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch (err) {
-    data = { body: event.data ? event.data.text() : '' };
-  }
-
-  const title = data.title || 'Domingo Kids';
-  const options = {
-    body: data.body || 'Você tem uma nova notificação.',
-    icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png',
-    lang: 'pt-BR',
-    vibrate: [120, 80, 120],
-    data: {
-      url: data.url || './pais.html'
-    }
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) || './pais.html';
+  const destino = event.notification.data && event.notification.data.url
+    ? event.notification.data.url
+    : './pais.html';
+
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) {
-          client.focus();
-          if (client.url && client.navigate) {
-            try { client.navigate(targetUrl); } catch (err) {}
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientes) => {
+      for (const cliente of clientes) {
+        if ('focus' in cliente) {
+          cliente.focus();
+          if ('navigate' in cliente) {
+            try { cliente.navigate(destino); } catch (err) {}
           }
           return;
         }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+      if (self.clients.openWindow) return self.clients.openWindow(destino);
     })
   );
 });
