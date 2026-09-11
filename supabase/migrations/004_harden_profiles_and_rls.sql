@@ -211,7 +211,9 @@ $function$;
 
 revoke execute on function public.buscar_email_por_username(text) from public, anon, authenticated;
 
--- 8) RLS: push config somente admin; sessoes somente equipe/admin.
+-- 8) RLS: push config somente admin.
+-- Sessoes continuam legiveis por qualquer autenticado: os pais leem
+-- name/session_date via embed em kids_check_ins (dados nao sensiveis).
 drop policy if exists kids_push_config_select_auth on public.kids_push_config;
 drop policy if exists kids_push_config_select_admin on public.kids_push_config;
 create policy kids_push_config_select_admin
@@ -219,10 +221,3 @@ create policy kids_push_config_select_admin
   for select
   to authenticated
   using (public.is_admin());
-
-drop policy if exists sessions_select on public.kids_sessions;
-create policy sessions_select
-  on public.kids_sessions
-  for select
-  to authenticated
-  using (public.is_staff());
