@@ -438,6 +438,15 @@
             background: #c4906a;
         }
 
+        #modal-escolha .btn-admin {
+            background: #3a2a20;
+            color: white;
+        }
+
+        #modal-escolha .btn-admin:hover {
+            background: #52402f;
+        }
+
         @media (max-width: 480px) {
             .card-login {
                 padding: 1.5rem 1.2rem;
@@ -603,13 +612,14 @@
         <p id="splash-texto">Autenticando e carregando...</p>
     </div>
 
-    <!-- ===== MODAL DE ESCOLHA (parent / staff) ===== -->
+    <!-- ===== MODAL DE ESCOLHA (parent / staff / admin) ===== -->
     <div id="modal-escolha">
         <div class="modal-box">
             <h3>Olá, <span id="nome-usuario-escolha">usuário</span>!</h3>
             <p>Como você deseja acessar hoje?</p>
             <button class="btn-escolha btn-pai" onclick="escolherPapel('parent')">👨‍👩‍👧 Acessar como Pai</button>
             <button class="btn-escolha btn-equipe" onclick="escolherPapel('staff')">👥 Acessar como Equipe</button>
+            <button class="btn-escolha btn-admin" id="btn-escolha-admin" style="display:none;" onclick="escolherPapel('admin')">🛡️ Acessar como Admin</button>
         </div>
     </div>
 
@@ -1004,17 +1014,22 @@
 
         function seguirAposLogin(nome, role) {
             if (role === 'admin') {
-                entrarNoPainel(nome || 'Admin', 'admin');
+                abrirModalEscolha(nome, true);
             } else if (role === 'staff') {
                 entrarNoPainel(nome || 'Equipe', 'equipe');
             } else if (role === 'parent') {
                 entrarNoPainel(nome || 'Pai', 'pais');
             } else if (role === 'both') {
-                document.getElementById('nome-usuario-escolha').innerText = nome || 'usuário';
-                document.getElementById('modal-escolha').style.display = 'flex';
+                abrirModalEscolha(nome, false);
             } else {
                 entrarNoPainel(nome || 'Pai', 'pais');
             }
+        }
+
+        function abrirModalEscolha(nome, mostrarAdmin) {
+            document.getElementById('nome-usuario-escolha').innerText = nome || 'usuário';
+            document.getElementById('btn-escolha-admin').style.display = mostrarAdmin ? 'block' : 'none';
+            document.getElementById('modal-escolha').style.display = 'flex';
         }
 
         async function ativarBiometria() {
@@ -1114,7 +1129,8 @@
 
         // ==================== ESCOLHER PAPEL (modal) ====================
         function escolherPapel(role) {
-            const url = role === 'staff' ? 'equipe.html' : 'pais.html';
+            const destinos = { parent: 'pais.html', staff: 'equipe.html', admin: 'admin.html' };
+            const url = destinos[role] || 'pais.html';
             document.getElementById('modal-escolha').style.display = 'none';
             entrarNoPainel('', url);
         }
