@@ -789,23 +789,23 @@
             if (family) {
                 document.getElementById('familyNameDisplay').innerText = family.family_name || 'Família não informada';
                 document.getElementById('fatherNameDisplay').innerText = family.father_name || 'Pai não informado';
-                document.getElementById('fatherPhoneDisplay').innerHTML = `📞 ${family.father_phone || '-'}`;
+                document.getElementById('fatherPhoneDisplay').innerHTML = `📞 ${escapeHtml(family.father_phone || '-')}`;
                 const fatherAvatarDiv = document.getElementById('fatherAvatar');
                 if (family.father_photo_url) {
-                    fatherAvatarDiv.innerHTML = `<img src="${family.father_photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+                    fatherAvatarDiv.innerHTML = `<img src="${safeUrl(family.father_photo_url)}" style="width:100%;height:100%;object-fit:cover;">`;
                 } else {
                     fatherAvatarDiv.innerHTML = '👨';
                 }
                 document.getElementById('motherNameDisplay').innerText = family.mother_name || 'Mãe não informada';
-                document.getElementById('motherPhoneDisplay').innerHTML = `📞 ${family.mother_phone || '-'}`;
+                document.getElementById('motherPhoneDisplay').innerHTML = `📞 ${escapeHtml(family.mother_phone || '-')}`;
                 const motherAvatarDiv = document.getElementById('motherAvatar');
                 if (family.mother_photo_url) {
-                    motherAvatarDiv.innerHTML = `<img src="${family.mother_photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+                    motherAvatarDiv.innerHTML = `<img src="${safeUrl(family.mother_photo_url)}" style="width:100%;height:100%;object-fit:cover;">`;
                 } else {
                     motherAvatarDiv.innerHTML = '👩';
                 }
                 document.getElementById('addressDisplay').innerText = family.address || 'Endereço não informado';
-                document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${family.cell_group || 'não informada'}`;
+                document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${escapeHtml(family.cell_group || 'não informada')}`;
                 window.currentFamilyData = family;
             }
         }
@@ -845,7 +845,7 @@
                 document.getElementById('editFatherPhoto').value = '';
                 const previewDiv = document.getElementById('editFatherPhotoPreview');
                 if (family.father_photo_url) {
-                    previewDiv.innerHTML = `<img src="${family.father_photo_url}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+                    previewDiv.innerHTML = `<img src="${safeUrl(family.father_photo_url)}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
                 } else {
                     previewDiv.innerHTML = '';
                 }
@@ -864,13 +864,7 @@
                 const formData = new FormData();
                 formData.append('image', photoFile);
                 try {
-                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-                    if (result.success) photoUrl = result.data.url;
-                    else throw new Error('Falha no upload');
+                    photoUrl = await uploadImagem(formData);
                 } catch (err) {
                     alert('Erro ao enviar foto do pai');
                     return;
@@ -898,7 +892,7 @@
                 document.getElementById('editMotherPhoto').value = '';
                 const previewDiv = document.getElementById('editMotherPhotoPreview');
                 if (family.mother_photo_url) {
-                    previewDiv.innerHTML = `<img src="${family.mother_photo_url}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+                    previewDiv.innerHTML = `<img src="${safeUrl(family.mother_photo_url)}" width="60" style="border-radius: 50%;"><br><small>Foto atual</small>`;
                 } else {
                     previewDiv.innerHTML = '';
                 }
@@ -917,13 +911,7 @@
                 const formData = new FormData();
                 formData.append('image', photoFile);
                 try {
-                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-                    if (result.success) photoUrl = result.data.url;
-                    else throw new Error('Falha no upload');
+                    photoUrl = await uploadImagem(formData);
                 } catch (err) {
                     alert('Erro ao enviar foto da mãe');
                     return;
@@ -1001,7 +989,7 @@
                     html += `
                         <div style="border-bottom: 1px solid #eef2ff; padding-bottom: 0.6rem;">
                             <div><strong>${escapeHtml(child.name)}</strong></div>
-                            <div style="font-size: 0.8rem; color: #475569;">${ci.session?.name || 'Sessão'}</div>
+                            <div style="font-size: 0.8rem; color: #475569;">${escapeHtml(ci.session?.name || 'Sessão')}</div>
                             <div style="font-size: 0.8rem;">${status}</div>
                         </div>
                     `;
@@ -1044,7 +1032,7 @@
             if (checkins && checkins.length) {
                 historyDiv.innerHTML = checkins.map(ci => `
                     <div class="history-item-modal">
-                        ✅ <strong>${escapeHtml(ci.child.name)}</strong> - ${ci.session.name}
+                        ✅ <strong>${escapeHtml(ci.child?.name || '')}</strong> - ${escapeHtml(ci.session?.name || '')}
                         ${!ci.checked_out_at ? ' <span style="color:#2563eb;">(ATIVO)</span>' : ` - Saída: ${new Date(ci.checked_out_at).toLocaleTimeString()}`}
                     </div>
                 `).join('');
@@ -1076,7 +1064,7 @@
                 container.innerHTML = data.map(child => `
                     <div class="child-item">
                         <div class="child-avatar">
-                            ${child.photo_url ? `<img src="${child.photo_url}" style="width:56px; height:56px; border-radius:50%; object-fit:cover;">` : '👶'}
+                            ${child.photo_url ? `<img src="${safeUrl(child.photo_url)}" style="width:56px; height:56px; border-radius:50%; object-fit:cover;">` : '👶'}
                         </div>
                         <div class="child-info">
                             <div class="child-name">${escapeHtml(child.name)}</div>
@@ -1090,7 +1078,7 @@
                         </div>
                     </div>
                 `).join('');
-                select.innerHTML = `<option value="">-- Selecione uma criança --</option>` + data.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+                select.innerHTML = `<option value="">-- Selecione uma criança --</option>` + data.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
             } else {
                 container.innerHTML = '<p>Nenhuma criança cadastrada. Clique no botão + para adicionar.</p>';
                 select.innerHTML = '<option value="">-- selecione --</option>';
@@ -1114,6 +1102,7 @@
                 .from('kids_children')
                 .select('*')
                 .eq('id', childId)
+                .eq('family_id', currentFamilyId)
                 .single();
             if (error) {
                 alert('Erro ao carregar dados da criança.');
@@ -1128,7 +1117,7 @@
             document.getElementById('childPhoto').value = '';
             const previewDiv = document.getElementById('currentPhotoPreview');
             if (child.photo_url) {
-                previewDiv.innerHTML = `<img src="${child.photo_url}" width="80" style="border-radius: 50%;"><br><small>Foto atual</small>`;
+                previewDiv.innerHTML = `<img src="${safeUrl(child.photo_url)}" width="80" style="border-radius: 50%;"><br><small>Foto atual</small>`;
             } else {
                 previewDiv.innerHTML = '';
             }
@@ -1140,7 +1129,9 @@
             if (existingToast) existingToast.remove();
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            toast.innerHTML = `<span>${message}</span>`;
+            const span = document.createElement('span');
+            span.textContent = message == null ? '' : String(message);
+            toast.appendChild(span);
             document.body.appendChild(toast);
             toast.offsetHeight;
             toast.classList.add('show');
@@ -1163,16 +1154,13 @@
                 const formData = new FormData();
                 formData.append('image', photoFile);
                 try {
-                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                    const result = await response.json();
-                    if (result.success) photoUrl = result.data.url;
-                    else throw new Error('Falha upload');
+                    photoUrl = await uploadImagem(formData);
                 } catch (err) { alert('Erro ao enviar a foto.'); return; }
             }
             const childData = { name, birth_date: birthDate || null, allergies: allergies || null, special_needs: specialNeeds || null, family_id: currentFamilyId, is_active: true };
             if (photoUrl) childData.photo_url = photoUrl;
             let result;
-            if (childId) result = await supabaseClient.from('kids_children').update(childData).eq('id', childId);
+            if (childId) result = await supabaseClient.from('kids_children').update(childData).eq('id', childId).eq('family_id', currentFamilyId);
             else result = await supabaseClient.from('kids_children').insert([childData]);
             if (result.error) alert('Erro ao salvar: ' + result.error.message);
             else { showToast(childId ? 'Criança atualizada!' : 'Criança adicionada!'); closeChildModal(); await loadChildren(); }
@@ -1180,7 +1168,7 @@
 
         async function deleteChild(childId) {
             if (!confirm('Tem certeza que deseja excluir esta criança?')) return;
-            const { error } = await supabaseClient.from('kids_children').delete().eq('id', childId);
+            const { error } = await supabaseClient.from('kids_children').delete().eq('id', childId).eq('family_id', currentFamilyId);
             if (error) alert('Erro ao excluir: ' + error.message);
             else { showToast('Criança removida.'); await loadChildren(); await loadLastRegister(); }
         }
@@ -1237,13 +1225,33 @@
 
         // ==================== UTILITÁRIOS ====================
         function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+            return String(str == null ? '' : str).replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
             });
+        }
+
+        function safeUrl(url) {
+            try {
+                const u = new URL(String(url), window.location.href);
+                if (u.protocol === 'http:' || u.protocol === 'https:') return escapeHtml(u.href);
+            } catch (e) {}
+            return '';
+        }
+
+        async function uploadImagem(formData) {
+            const { data } = await supabaseClient.auth.getSession();
+            const token = data && data.session ? data.session.access_token : '';
+            const response = await fetch(FUNCTIONS_URL + '/imgbb-upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'apikey': SB_KEY
+                },
+                body: formData
+            });
+            const result = await response.json().catch(function () { return {}; });
+            if (!response.ok || !result.url) throw new Error('Falha no upload');
+            return result.url;
         }
 
 
@@ -1254,11 +1262,12 @@
 
         
         async function logout() {
+            try { await supabaseClient.auth.signOut(); } catch (e) {}
             window.location.href = "index.html?t=" + Date.now();
         }
 
         // Inicializar
-        loadUserAndFamily();
+        loadUserAndFamily().catch(function (e) { console.error('Falha ao iniciar o painel da família:', e); });
     </script>
     <script src="js/pwa.js?v=3"></script>
 </body>

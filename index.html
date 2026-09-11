@@ -1168,7 +1168,7 @@
             erro.style.display = 'none';
         
             try {
-                const urlDestino = window.location.origin + "/domingokids/novasenha.html";
+                const urlDestino = new URL('novasenha.html', window.location.href).href;
                 const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: urlDestino,
                 });

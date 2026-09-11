@@ -11,5 +11,5 @@ const VAPID_PUBLIC_KEY = 'BJ4YbI1bdeeM_GzNCpS-nq1lA1eeGEdahIn09pmL4qchZ92AIsURlL
 // Instância global do cliente Supabase (será usada em todos os lugares)
 //const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-// Chave da API imgBB (mantida a mesma)
-const IMGBB_API_KEY = 'd3ec802e2dfc1896a26e44b80d489f17';
+// Upload de imagens: usa a Edge Function `imgbb-upload` (chave mantida no servidor).
+

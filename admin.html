@@ -625,8 +625,8 @@
         <div class="modal-box">
             <h3>Excluir usuário</h3>
             <p id="modal-excluir-info">Confirme a exclusão.</p>
-            <label for="senha-excluir">Senha de exclusão</label>
-            <input type="password" id="senha-excluir" placeholder="Digite a senha" autocomplete="off">
+            <label for="senha-excluir">Confirmação</label>
+            <input type="text" id="senha-excluir" placeholder="Digite o usuário para confirmar" autocomplete="off">
             <div class="btn-group">
                 <button class="btn btn-danger" onclick="confirmarExclusaoUsuario()">Excluir</button>
                 <button class="btn btn-secondary" onclick="fecharModalExclusao()">Cancelar</button>
@@ -641,7 +641,6 @@
     <script>
         // ==================== CONFIGURAÇÃO ====================
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-        const SENHA_EXCLUSAO = 'admin1425';
         let usuarioEditando = null;
         let usuarioExcluindo = null;
         let listaUsuarios = [];
@@ -723,10 +722,11 @@
         }
 
         function botoesAcoes(userId) {
+            const id = escapeHtml(userId);
             return `
                 <div class="btn-acoes">
-                    <button class="btn btn-secondary" onclick="abrirModalEdicao('${userId}')">Editar</button>
-                    <button class="btn btn-danger" onclick="abrirModalExclusao('${userId}')">Excluir</button>
+                    <button class="btn btn-secondary" data-user-id="${id}" onclick="abrirModalEdicao(this.dataset.userId)">Editar</button>
+                    <button class="btn btn-danger" data-user-id="${id}" onclick="abrirModalExclusao(this.dataset.userId)">Excluir</button>
                 </div>
             `;
         }
@@ -745,13 +745,13 @@
             listaMobile.innerHTML = '';
 
             usuarios.forEach(user => {
-                const roleClass = user.role || 'parent';
+                const roleClass = ['parent','staff','both','admin'].includes(user.role) ? user.role : 'parent';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${escapeHtml(user.username || '—')}</strong></td>
                     <td>${escapeHtml(user.email || '—')}</td>
                     <td>${escapeHtml(user.full_name || '—')}</td>
-                    <td><span class="badge-role ${roleClass}">${roleClass}</span></td>
+                    <td><span class="badge-role ${escapeHtml(roleClass)}">${escapeHtml(roleClass)}</span></td>
                     <td>${botoesAcoes(user.id)}</td>
                 `;
                 tbody.appendChild(tr);
@@ -765,7 +765,7 @@
                             <div class="user-card-meta">${escapeHtml(user.email || '—')}</div>
                             <div class="user-card-meta">${escapeHtml(user.full_name || '—')}</div>
                         </div>
-                        <span class="badge-role ${roleClass}">${roleClass}</span>
+                        <span class="badge-role ${escapeHtml(roleClass)}">${escapeHtml(roleClass)}</span>
                     </div>
                     ${botoesAcoes(user.id)}
                 `;
@@ -842,9 +842,10 @@
         async function confirmarExclusaoUsuario() {
             if (!usuarioExcluindo) return;
 
-            const senha = document.getElementById('senha-excluir').value.trim();
-            if (senha !== SENHA_EXCLUSAO) {
-                showToast('Senha de exclusão incorreta.', 'error');
+            const confirmacao = document.getElementById('senha-excluir').value.trim();
+            const esperado = String(usuarioExcluindo.username || usuarioExcluindo.email || '').trim();
+            if (!confirmacao || confirmacao.toLowerCase() !== esperado.toLowerCase()) {
+                showToast('Digite o usuário corretamente para confirmar.', 'error');
                 return;
             }
 
@@ -854,13 +855,29 @@
                 return;
             }
 
-            const { error } = await supabaseClient
-                .from('kids_profiles')
-                .delete()
-                .eq('id', usuarioExcluindo.id);
+            const { data: sessionData } = await supabaseClient.auth.getSession();
+            const token = sessionData && sessionData.session ? sessionData.session.access_token : '';
+            let ok = false;
+            let msg = 'Erro ao excluir.';
+            try {
+                const resp = await fetch(FUNCTIONS_URL + '/admin-delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'apikey': SB_KEY
+                    },
+                    body: JSON.stringify({ userId: usuarioExcluindo.id })
+                });
+                const result = await resp.json().catch(function () { return {}; });
+                ok = resp.ok && result.ok === true;
+                if (!ok) msg = result.error || msg;
+            } catch (e) {
+                msg = e.message || msg;
+            }
 
-            if (error) {
-                showToast('Erro ao excluir: ' + error.message, 'error');
+            if (!ok) {
+                showToast('Erro ao excluir: ' + msg, 'error');
                 return;
             }
 
@@ -972,19 +989,15 @@
                 <div class="log-item">
                     <strong>${escapeHtml(l.titulo || l.chave)}</strong>
                     <div class="log-meta">${escapeHtml(l.corpo || '')}</div>
-                    <div class="log-meta">${l.destinatarios} envio(s) - ${new Date(l.enviado_em).toLocaleString('pt-BR')}</div>
+                    <div class="log-meta">${escapeHtml(l.destinatarios)} envio(s) - ${escapeHtml(new Date(l.enviado_em).toLocaleString('pt-BR'))}</div>
                 </div>
             `).join('');
         }
 
         // ==================== UTILITÁRIOS ====================
         function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+            return String(str == null ? '' : str).replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
             });
         }
 
@@ -997,9 +1010,10 @@
                 carregarNotificacoes();
                 carregarLogs();
             }
-        })();
+        })().catch(function (e) { console.error('Falha ao iniciar o admin:', e); });
 
         async function logout() {
+            try { await supabaseClient.auth.signOut(); } catch (e) {}
             window.location.href = 'index.html?t=' + Date.now();
         }
     </script>
