@@ -1,4 +1,4 @@
-const CACHE = 'domingokids-v4';
+const CACHE = 'domingokids-v5';
 const PRECACHE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const PRECACHE = [
   './icons/icon-192.png',
   './icons/icon-180.png',
   './icons/apple-touch-icon.png',
+  './icons/badge-96.png',
   './logo.png'
 ];
 
@@ -107,7 +108,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: './icons/icon-192.png',
-      badge: './icons/icon-192.png',
+      badge: './icons/badge-96.png',
       lang: 'pt-BR',
       vibrate: [120, 80, 120],
       tag: data.tag || undefined,
