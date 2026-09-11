@@ -1449,6 +1449,11 @@
                     childName: childName,
                     room: room
                 });
+                enviarPush({
+                    event: 'aniversario_checkin',
+                    childId: childId,
+                    childName: childName
+                });
             }
             closeSelectRoomModal();
         }
@@ -1801,12 +1806,15 @@
                 for (const c of checkins) {
                     let isBirthdayWeek = false;
                     if (c.child.birth_date) {
-                        const birth = new Date(c.child.birth_date);
-                        const today = new Date();
-                        const weekLater = new Date();
-                        weekLater.setDate(today.getDate() + 7);
-                        const birthThisYear = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
-                        if (birthThisYear >= today && birthThisYear <= weekLater) isBirthdayWeek = true;
+                        const [, bm, bd] = c.child.birth_date.split('-').map(Number);
+                        const hoje = new Date();
+                        for (let d = 0; d <= 6; d++) {
+                            const dia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + d);
+                            if (dia.getMonth() + 1 === bm && dia.getDate() === bd) {
+                                isBirthdayWeek = true;
+                                break;
+                            }
+                        }
                     }
                     const birthdayIcon = isBirthdayWeek ? '🎂 ' : '';
                     const isVisitor = !!c.child.is_visitor;

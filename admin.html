@@ -445,6 +445,73 @@
                 min-height: 44px;
             }
         }
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+            background: white;
+            padding: 0.4rem;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+        }
+        .tab {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab.active { background: var(--primary); color: #fff; }
+
+        /* Notificações */
+        .notif-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .notif-row:last-child { border-bottom: none; }
+        .notif-info strong { display: block; font-size: 0.9rem; }
+        .notif-info small { color: var(--text-light); font-size: 0.75rem; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: 0 0 auto; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #d6cbc7; transition: 0.2s; border-radius: 26px;
+        }
+        .slider:before {
+            content: ""; position: absolute; height: 20px; width: 20px;
+            left: 3px; bottom: 3px; background: #fff; transition: 0.2s; border-radius: 50%;
+        }
+        .switch input:checked + .slider { background: var(--primary); }
+        .switch input:checked + .slider:before { transform: translateX(20px); }
+
+        #secao-notificacoes label.field {
+            display: block; font-weight: 600; font-size: 0.8rem;
+            margin-bottom: 0.3rem; color: var(--text-light);
+        }
+        #secao-notificacoes input[type="text"],
+        #secao-notificacoes textarea {
+            width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px;
+            border: 1px solid var(--border-color); font-size: 0.9rem;
+            background: var(--input-bg); color: var(--text-main);
+            font-family: inherit; outline: none; margin-bottom: 0.9rem;
+        }
+        .log-item {
+            padding: 0.6rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.8rem;
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-item .log-meta { color: var(--text-light); font-size: 0.72rem; }
+
+        textarea { resize: vertical; }
     </style>
 </head>
 <body>
@@ -462,6 +529,13 @@
             </div>
         </div>
 
+        <!-- Abas -->
+        <div class="tabs">
+            <button class="tab active" id="tab-usuarios" onclick="mudarSecao('usuarios')">Usuarios</button>
+            <button class="tab" id="tab-notificacoes" onclick="mudarSecao('notificacoes')">Notificacoes</button>
+        </div>
+
+        <div id="secao-usuarios">
         <!-- Card principal -->
         <div class="card">
             <div class="card-header">
@@ -486,6 +560,45 @@
                 </table>
             </div>
             <div id="listaUsuariosMobile" class="lista-mobile"></div>
+        </div>
+        </div><!-- /secao-usuarios -->
+
+        <div id="secao-notificacoes" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Notificacoes</h2>
+                </div>
+                <p style="font-size:0.8rem; color:var(--text-light); margin-bottom:0.5rem;">
+                    Controle quais notificacoes push o sistema envia.
+                </p>
+                <div id="listaNotificacoes">
+                    <div class="empty-state">Carregando...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Enviar aviso</h2>
+                </div>
+                <label class="field" for="avisoTitulo">Titulo</label>
+                <input type="text" id="avisoTitulo" maxlength="60" placeholder="Ex: Reuniao de pais">
+                <label class="field" for="avisoMensagem">Mensagem</label>
+                <textarea id="avisoMensagem" rows="3" maxlength="240" placeholder="Escreva o aviso para os pais"></textarea>
+                <div class="btn-acoes">
+                    <button class="btn btn-primary" onclick="enviarAviso()">Enviar para todos os pais</button>
+                    <button class="btn btn-secondary" onclick="enviarTeste()">Enviar teste</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Ultimos envios</h2>
+                    <button class="btn btn-secondary" onclick="carregarLogs()">Recarregar</button>
+                </div>
+                <div id="listaLogs">
+                    <div class="empty-state">Carregando...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -756,6 +869,114 @@
             carregarUsuarios();
         }
 
+        // ==================== NOTIFICAÇÕES ====================
+        const NOTIF_DEFS = [
+            { chave: 'global', titulo: 'Notificacoes ativadas (global)', desc: 'Desliga todas as notificacoes abaixo.' },
+            { chave: 'checkin', titulo: 'Check-in', desc: 'Avisa os pais quando a crianca entra na sala.' },
+            { chave: 'checkout', titulo: 'Check-out', desc: 'Avisa os pais quando a crianca e liberada.' },
+            { chave: 'checkout_pendente', titulo: 'Check-out pendente (20:05)', desc: 'Avisa os pais que ainda nao buscaram a crianca.' },
+            { chave: 'aniversario_checkin', titulo: 'Aniversariantes no check-in', desc: 'Avisa a equipe quando a crianca faz aniversario hoje ou na semana.' },
+            { chave: 'aviso', titulo: 'Aviso geral', desc: 'Permite enviar avisos para todos os pais.' }
+        ];
+
+        function mudarSecao(secao) {
+            const usuarios = secao === 'usuarios';
+            document.getElementById('secao-usuarios').style.display = usuarios ? 'block' : 'none';
+            document.getElementById('secao-notificacoes').style.display = usuarios ? 'none' : 'block';
+            document.getElementById('tab-usuarios').classList.toggle('active', usuarios);
+            document.getElementById('tab-notificacoes').classList.toggle('active', !usuarios);
+            if (!usuarios) { carregarNotificacoes(); carregarLogs(); }
+        }
+
+        async function carregarNotificacoes() {
+            const container = document.getElementById('listaNotificacoes');
+            const { data, error } = await supabaseClient
+                .from('kids_push_config')
+                .select('chave, ativo');
+            if (error) {
+                console.error(error);
+                container.innerHTML = '<div class="empty-state">Erro ao carregar.</div>';
+                return;
+            }
+            const mapa = new Map((data || []).map(r => [r.chave, r.ativo]));
+            container.innerHTML = NOTIF_DEFS.map(def => {
+                const ativo = mapa.get(def.chave) !== false;
+                return `
+                    <div class="notif-row">
+                        <div class="notif-info">
+                            <strong>${escapeHtml(def.titulo)}</strong>
+                            <small>${escapeHtml(def.desc)}</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" ${ativo ? 'checked' : ''} onchange="toggleNotificacao('${def.chave}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>`;
+            }).join('');
+        }
+
+        async function toggleNotificacao(chave, ativo) {
+            const { error } = await supabaseClient
+                .from('kids_push_config')
+                .upsert({ chave, ativo, atualizado_em: new Date().toISOString() }, { onConflict: 'chave' });
+            if (error) {
+                showToast('Erro ao salvar: ' + error.message, 'error');
+                carregarNotificacoes();
+                return;
+            }
+            showToast('Notificacao atualizada.', 'success');
+        }
+
+        async function enviarAviso() {
+            const title = (document.getElementById('avisoTitulo').value || '').trim();
+            const body = (document.getElementById('avisoMensagem').value || '').trim();
+            if (!body) {
+                showToast('Escreva a mensagem do aviso.', 'error');
+                return;
+            }
+            const ok = await enviarPush({ event: 'aviso', title: title || 'Aviso', body });
+            if (ok) {
+                showToast('Aviso enviado.', 'success');
+                document.getElementById('avisoTitulo').value = '';
+                document.getElementById('avisoMensagem').value = '';
+                setTimeout(carregarLogs, 1000);
+            } else {
+                showToast('Falha ao enviar. Verifique se o aviso esta ativo.', 'error');
+            }
+        }
+
+        async function enviarTeste() {
+            const body = (document.getElementById('avisoMensagem').value || '').trim();
+            const ok = await enviarPush({ event: 'aviso', selfTest: true, body: body || undefined });
+            showToast(ok ? 'Teste enviado para este dispositivo.' : 'Falha ao enviar teste.', ok ? 'success' : 'error');
+            if (ok) setTimeout(carregarLogs, 1000);
+        }
+
+        async function carregarLogs() {
+            const container = document.getElementById('listaLogs');
+            const { data, error } = await supabaseClient
+                .from('kids_notifications_log')
+                .select('chave, titulo, corpo, destinatarios, enviado_em')
+                .order('enviado_em', { ascending: false })
+                .limit(15);
+            if (error) {
+                console.error(error);
+                container.innerHTML = '<div class="empty-state">Erro ao carregar.</div>';
+                return;
+            }
+            if (!data || !data.length) {
+                container.innerHTML = '<div class="empty-state">Nenhum envio ainda.</div>';
+                return;
+            }
+            container.innerHTML = data.map(l => `
+                <div class="log-item">
+                    <strong>${escapeHtml(l.titulo || l.chave)}</strong>
+                    <div class="log-meta">${escapeHtml(l.corpo || '')}</div>
+                    <div class="log-meta">${l.destinatarios} envio(s) - ${new Date(l.enviado_em).toLocaleString('pt-BR')}</div>
+                </div>
+            `).join('');
+        }
+
         // ==================== UTILITÁRIOS ====================
         function escapeHtml(str) {
             if (!str) return '';
@@ -773,6 +994,8 @@
             if (acesso) {
                 registrarPush();
                 carregarUsuarios();
+                carregarNotificacoes();
+                carregarLogs();
             }
         })();
 

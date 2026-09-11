@@ -1,4 +1,4 @@
-const CACHE = 'domingokids-v3';
+const CACHE = 'domingokids-v4';
 const PRECACHE = [
   './',
   './index.html',
@@ -110,6 +110,8 @@ self.addEventListener('push', (event) => {
       badge: './icons/icon-192.png',
       lang: 'pt-BR',
       vibrate: [120, 80, 120],
+      tag: data.tag || undefined,
+      renotify: !!data.tag,
       data: { url: data.url || './pais.html' }
     })
   );
@@ -117,9 +119,11 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const destino = event.notification.data && event.notification.data.url
+  const destinoRel = event.notification.data && event.notification.data.url
     ? event.notification.data.url
     : './pais.html';
+  let destino = destinoRel;
+  try { destino = new URL(destinoRel, self.registration.scope).href; } catch (err) {}
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientes) => {
