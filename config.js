@@ -13,9 +13,26 @@ const VAPID_PUBLIC_KEY = 'BJ4YbI1bdeeM_GzNCpS-nq1lA1eeGEdahIn09pmL4qchZ92AIsURlL
 
 // Upload de imagens: usa a Edge Function `imgbb-upload` (chave mantida no servidor).
 
+// Remove a sessão salva no navegador SEM revogar no servidor.
+// Usado no logout de aparelhos com biometria, para que o refresh token
+// guardado no backup continue válido para o login rápido.
+function limparSessaoLocalSupabase() {
+    try {
+        const ref = new URL(SUPABASE_URL).hostname.split('.')[0];
+        const prefixo = 'sb-' + ref + '-auth-token';
+        const chaves = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf(prefixo) === 0) chaves.push(k);
+        }
+        chaves.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) {}
+}
+
 // Encerra a sessão e volta para a tela de login.
-// Se houver biometria cadastrada, guarda um backup dos tokens (sessão local)
-// para o login rápido por biometria continuar funcionando no próximo acesso.
+// Se houver biometria cadastrada, guarda um backup dos tokens e faz um logout
+// apenas local (sem revogar no servidor), para o login rápido por biometria
+// continuar funcionando no próximo acesso.
 async function encerrarSessao(destino) {
     const alvo = destino || 'index.html';
     try {
@@ -31,7 +48,8 @@ async function encerrarSessao(destino) {
                         salvoEm: new Date().toISOString()
                     }));
                 }
-                await supabaseClient.auth.signOut({ scope: 'local' });
+                try { await supabaseClient.auth.stopAutoRefresh(); } catch (e) {}
+                limparSessaoLocalSupabase();
             } else {
                 await supabaseClient.auth.signOut();
             }

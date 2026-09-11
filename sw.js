@@ -1,4 +1,4 @@
-const CACHE = 'domingokids-v6';
+const CACHE = 'domingokids-v7';
 const PRECACHE = [
   './',
   './index.html',
