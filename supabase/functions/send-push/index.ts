@@ -62,6 +62,31 @@ function formatarDiaSemana(data: Date): string {
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 }
 
+// Consome uma cota de rate limit no banco. Em caso de indisponibilidade,
+// nao bloqueia o envio (falha aberta) para nao derrubar notificacoes legitimas.
+async function consumirLimite(
+  admin: ReturnType<typeof createClient>,
+  bucket: string,
+  max: number,
+  janelaSegundos: number,
+): Promise<boolean> {
+  try {
+    const { data, error } = await admin.rpc('check_rate_limit', {
+      p_bucket: bucket,
+      p_max: max,
+      p_janela_segundos: janelaSegundos,
+    });
+    if (error) {
+      console.error('rate limit indisponivel', error);
+      return true;
+    }
+    return data === true;
+  } catch (err) {
+    console.error('rate limit erro', err);
+    return true;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
@@ -102,6 +127,19 @@ Deno.serve(async (req) => {
   if (!isStaff) return json({ error: 'forbidden' }, 403);
   if ((eventName === 'aviso' || eventName === 'broadcast') && role !== 'admin') {
     return json({ error: 'forbidden' }, 403);
+  }
+
+  // Rate limit: cota por usuario, cota extra para aviso global e teto global.
+  const uid = authData.user.id;
+  if (!(await consumirLimite(admin, `sendpush:user:${uid}`, 40, 60))) {
+    return json({ error: 'rate_limited', retryAfter: 60 }, 429);
+  }
+  if ((eventName === 'aviso' || eventName === 'broadcast')
+      && !(await consumirLimite(admin, `sendpush:aviso:${uid}`, 3, 300))) {
+    return json({ error: 'rate_limited', retryAfter: 300 }, 429);
+  }
+  if (!(await consumirLimite(admin, 'sendpush:global', 300, 60))) {
+    return json({ error: 'rate_limited', retryAfter: 60 }, 429);
   }
 
   if (!selfTest) {

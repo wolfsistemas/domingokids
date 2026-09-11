@@ -67,6 +67,10 @@ async function enviarPush(payload) {
       },
       body: JSON.stringify(payload || {})
     });
+    if (response.status === 429) {
+      console.warn('Push não enviado: excesso de tentativas (rate limit).');
+      return false;
+    }
     return response.ok;
   } catch (err) {
     console.warn('Falha ao enviar push:', err);

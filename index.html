@@ -935,6 +935,14 @@
                     const { data: emailEncontrado, error: profileErr } = await supabaseClient
                         .rpc('get_email_por_username', { p_username: entrada });
         
+                    if (profileErr && /rate_limited/i.test(profileErr.message || '')) {
+                        exibirErro('mensagem-erro', 'Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+                        document.getElementById('senha-input').value = "";
+                        btn.innerText = "Entrar";
+                        btn.disabled = false;
+                        return;
+                    }
+
                     if (profileErr || !emailEncontrado) {
                         exibirErro('mensagem-erro', 'Usuário não encontrado.');
                         document.getElementById('senha-input').value = "";
@@ -1311,7 +1319,15 @@
                 const { data: check, error: buscaError } = await supabaseClient
                     .rpc('check_cadastro_disponivel', { p_username: username, p_email: email });
         
-                if (buscaError) throw buscaError;
+                if (buscaError) {
+                    if (/rate_limited/i.test(buscaError.message || '')) {
+                        exibirMsgCadastro('Muitas tentativas. Aguarde alguns minutos e tente novamente.', 'error');
+                        btn.disabled = false;
+                        btn.innerText = 'Criar conta';
+                        return;
+                    }
+                    throw buscaError;
+                }
         
                 if (check.username_ocupado) {
                     exibirMsgCadastro(`O nome de usuário "${username}" já está em uso.`, 'error');
