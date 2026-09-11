@@ -41,7 +41,7 @@
     <meta name="twitter:description" content="Check-in das crianças da Igreja Videira de Jataí.">
     <meta name="twitter:image" content="https://videirajatai.com.br/domingokids/og-cover.png">
 
-    <script src="config.js"></script>
+    <script src="config.js?v=2"></script>
     <script src="js/toast.js"></script>
   
     <style>
@@ -684,7 +684,7 @@
 
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/biometria.js"></script>
+    <script src="js/biometria.js?v=2"></script>
     <script>
         // ==================== CONFIGURAÇÃO ====================
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY, {
@@ -960,7 +960,9 @@
                 }
         
                 const userId = loginData.user.id;
-                Biometria.limparSessao();
+                if (typeof Biometria !== 'undefined' && typeof Biometria.limparSessao === 'function') {
+                    Biometria.limparSessao();
+                }
         
                 const { data: profile, error: profileError } = await supabaseClient
                     .from('kids_profiles')
@@ -987,8 +989,12 @@
                 const nome = loginData.user.user_metadata?.full_name
                     || (role === 'admin' ? 'Admin' : role === 'staff' ? 'Equipe' : 'Pai');
 
-                const podeBio = ehCelular() && await Biometria.plataformaDisponivel();
-                if (podeBio && !Biometria.cadastradaPara(emailParaLogin)) {
+                let podeBio = false;
+                if (ehCelular() && typeof Biometria !== 'undefined'
+                    && typeof Biometria.plataformaDisponivel === 'function') {
+                    try { podeBio = await Biometria.plataformaDisponivel(); } catch (e) { podeBio = false; }
+                }
+                if (podeBio && typeof Biometria.cadastradaPara === 'function' && !Biometria.cadastradaPara(emailParaLogin)) {
                     loginPendente = {
                         nome: nome,
                         email: emailParaLogin,
@@ -1007,7 +1013,8 @@
         
             } catch (err) {
                 console.error('Erro no login:', err);
-                exibirErro('mensagem-erro', 'Erro inesperado. Tente novamente.');
+                const detalhe = (err && err.message) ? err.message : String(err);
+                exibirErro('mensagem-erro', 'Erro inesperado: ' + detalhe);
                 btn.innerText = "Entrar";
                 btn.disabled = false;
             }
@@ -1077,6 +1084,10 @@
         async function loginComBiometria() {
             const erro = document.getElementById('mensagem-erro');
             const btn = document.getElementById('btn-biometria');
+            if (typeof Biometria === 'undefined' || typeof Biometria.autenticar !== 'function') {
+                exibirErro('mensagem-erro', "Recurso de biometria indisponível. Entre com usuário e senha.");
+                return;
+            }
             erro.style.display = 'none';
             btn.disabled = true;
             btn.innerText = "Validando Segurança...";
@@ -1090,7 +1101,7 @@
                 // Sessão foi encerrada (logout): restaura os tokens guardados
                 // após validar a digital, para o login rápido funcionar.
                 if (!user) {
-                    const backup = Biometria.lerSessao();
+                    const backup = (typeof Biometria.lerSessao === 'function') ? Biometria.lerSessao() : null;
                     if (backup && backup.access_token && backup.refresh_token
                         && (backup.email || '').toLowerCase() === emailCadastro) {
                         const { error: setErr } = await supabaseClient.auth.setSession({
@@ -1099,7 +1110,7 @@
                         });
                         if (!setErr) {
                             user = (await supabaseClient.auth.getUser()).data.user;
-                            Biometria.limparSessao();
+                            if (typeof Biometria.limparSessao === 'function') Biometria.limparSessao();
                         }
                     }
                 }
@@ -1130,15 +1141,21 @@
         }
 
         function desativarBiometria() {
-            Biometria.removerCadastro();
+            if (typeof Biometria !== 'undefined' && typeof Biometria.removerCadastro === 'function') {
+                Biometria.removerCadastro();
+            }
             atualizarBotoesBiometria();
         }
 
         async function atualizarBotoesBiometria() {
             const btnBio = document.getElementById('btn-biometria');
             const btnRemover = document.getElementById('btn-remover-bio');
-            const ok = ehCelular() && await Biometria.plataformaDisponivel();
-            const tem = Biometria.temCadastro();
+            let ok = false;
+            let tem = false;
+            if (typeof Biometria !== 'undefined') {
+                try { ok = ehCelular() && await Biometria.plataformaDisponivel(); } catch (e) { ok = false; }
+                try { tem = Biometria.temCadastro(); } catch (e) { tem = false; }
+            }
             if (btnBio) btnBio.style.display = (ok && tem) ? 'block' : 'none';
             if (btnRemover) btnRemover.style.display = (ok && tem) ? 'block' : 'none';
         }
@@ -1147,8 +1164,16 @@
             // Após um logout explícito, não reentra sozinho com a biometria.
             // No próximo acesso (sem o parâmetro), o login rápido volta a agir.
             const acabouDeSair = new URLSearchParams(window.location.search).has('logout');
-            if (!acabouDeSair && ehCelular() && Biometria.temCadastro()) loginComBiometria();
-        });
+            if (acabouDeSair) return;
+            if (!ehCelular() || typeof Biometria === 'undefined' || !Biometria.temCadastro()) return;
+            // Só tenta o login rápido se houver sessão salva ou backup do logout,
+            // para não abrir a digital enquanto o usuário digita a senha.
+            supabaseClient.auth.getSession().then(function (r) {
+                const temSessao = !!(r && r.data && r.data.session);
+                const temBackup = !!localStorage.getItem('dk_sessao_bio');
+                if (temSessao || temBackup) loginComBiometria();
+            }).catch(function () {});
+        }).catch(function (e) { console.warn('Biometria indisponível:', e); });
 
         // ==================== ESCOLHER PAPEL (modal) ====================
         function escolherPapel(role) {
