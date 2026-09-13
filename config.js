@@ -13,49 +13,20 @@ const VAPID_PUBLIC_KEY = 'BJ4YbI1bdeeM_GzNCpS-nq1lA1eeGEdahIn09pmL4qchZ92AIsURlL
 
 // Upload de imagens: usa a Edge Function `imgbb-upload` (chave mantida no servidor).
 
-// Remove a sessão salva no navegador SEM revogar no servidor.
-// Usado no logout de aparelhos com biometria, para que o refresh token
-// guardado no backup continue válido para o login rápido.
-function limparSessaoLocalSupabase() {
-    try {
-        const ref = new URL(SUPABASE_URL).hostname.split('.')[0];
-        const prefixo = 'sb-' + ref + '-auth-token';
-        const chaves = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.indexOf(prefixo) === 0) chaves.push(k);
-        }
-        chaves.forEach(function (k) { localStorage.removeItem(k); });
-    } catch (e) {}
-}
-
 // Encerra a sessão e volta para a tela de login.
-// Se houver biometria cadastrada, guarda um backup dos tokens e faz um logout
-// apenas local (sem revogar no servidor), para o login rápido por biometria
-// continuar funcionando no próximo acesso.
+// Espelha o sistema de referência: quem usa biometria NÃO tem a sessão do
+// Supabase destruída no logout. Ela continua em localStorage e é reaproveitada
+// pelo login rápido (a digital funciona como confirmação local).
+// Quem não tem biometria encerra a sessão normalmente.
 async function encerrarSessao(destino) {
     const alvo = destino || 'index.html';
     try {
         const temBio = !!localStorage.getItem('dk_webauthn');
-        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-            if (temBio) {
-                const { data } = await supabaseClient.auth.getSession();
-                if (data && data.session) {
-                    localStorage.setItem('dk_sessao_bio', JSON.stringify({
-                        access_token: data.session.access_token,
-                        refresh_token: data.session.refresh_token,
-                        email: (data.session.user && data.session.user.email) || '',
-                        salvoEm: new Date().toISOString()
-                    }));
-                }
-                try { await supabaseClient.auth.stopAutoRefresh(); } catch (e) {}
-                limparSessaoLocalSupabase();
-            } else {
-                await supabaseClient.auth.signOut();
-            }
+        if (!temBio && typeof supabaseClient !== 'undefined' && supabaseClient) {
+            await supabaseClient.auth.signOut();
         }
     } catch (e) {}
-    window.location.href = alvo + '?t=' + Date.now() + '&logout=1';
+    window.location.href = alvo + '?t=' + Date.now();
 }
 
 // ==================== DATAS (fuso fixo America/Sao_Paulo) ====================
