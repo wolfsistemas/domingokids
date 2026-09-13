@@ -968,9 +968,6 @@
                 }
         
                 const userId = loginData.user.id;
-                if (typeof Biometria !== 'undefined' && typeof Biometria.limparSessao === 'function') {
-                    Biometria.limparSessao();
-                }
         
                 const { data: profile, error: profileError } = await supabaseClient
                     .from('kids_profiles')
@@ -1104,28 +1101,7 @@
                 const cadastro = await Biometria.autenticar();
                 const emailCadastro = (cadastro.email || '').toLowerCase();
 
-                let user = (await supabaseClient.auth.getUser()).data.user;
-
-                // Sessão foi encerrada (logout): restaura os tokens guardados
-                // após validar a digital, para o login rápido funcionar.
-                if (!user) {
-                    const backup = (typeof Biometria.lerSessao === 'function') ? Biometria.lerSessao() : null;
-                    if (backup && backup.access_token && backup.refresh_token
-                        && (backup.email || '').toLowerCase() === emailCadastro) {
-                        const { error: setErr } = await supabaseClient.auth.setSession({
-                            access_token: backup.access_token,
-                            refresh_token: backup.refresh_token
-                        });
-                        if (!setErr) {
-                            user = (await supabaseClient.auth.getUser()).data.user;
-                            if (typeof Biometria.limparSessao === 'function') Biometria.limparSessao();
-                        } else if (typeof Biometria.limparSessao === 'function') {
-                            // Backup inválido/expirado: descarta para não repetir
-                            // o prompt de digital a cada abertura.
-                            Biometria.limparSessao();
-                        }
-                    }
-                }
+                const user = (await supabaseClient.auth.getUser()).data.user;
 
                 if (!user || (user.email || '').toLowerCase() !== emailCadastro) {
                     throw new Error("Sessão expirada. Entre com usuário e senha. A digital continua cadastrada neste aparelho.");
@@ -1173,18 +1149,7 @@
         }
 
         atualizarBotoesBiometria().then(function () {
-            // Após um logout explícito, não reentra sozinho com a biometria.
-            // No próximo acesso (sem o parâmetro), o login rápido volta a agir.
-            const acabouDeSair = new URLSearchParams(window.location.search).has('logout');
-            if (acabouDeSair) return;
-            if (!ehCelular() || typeof Biometria === 'undefined' || !Biometria.temCadastro()) return;
-            // Só tenta o login rápido se houver sessão salva ou backup do logout,
-            // para não abrir a digital enquanto o usuário digita a senha.
-            supabaseClient.auth.getSession().then(function (r) {
-                const temSessao = !!(r && r.data && r.data.session);
-                const temBackup = !!localStorage.getItem('dk_sessao_bio');
-                if (temSessao || temBackup) loginComBiometria();
-            }).catch(function () {});
+            if (ehCelular() && typeof Biometria !== 'undefined' && Biometria.temCadastro()) loginComBiometria();
         }).catch(function (e) { console.warn('Biometria indisponível:', e); });
 
         // ==================== ESCOLHER PAPEL (modal) ====================
