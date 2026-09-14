@@ -557,7 +557,7 @@
             <label>Foto da criança</label>
             <input type="file" id="childPhoto" accept="image/jpeg, image/png, image/webp">
             <div id="currentPhotoPreview" class="photo-preview"></div>
-            <button class="btn-primary" onclick="saveChild()">Salvar</button>
+            <button class="btn-primary" id="saveChildBtn" onclick="saveChild()">Salvar</button>
             <button class="btn-outline" onclick="closeChildModal()">Cancelar</button>
         </div>
     </div>
@@ -702,6 +702,7 @@
         let currentFamilyId = null;
         let currentUser = null;
         let currentFamilyData = {};
+        let familyReady = false;
 
         // ==================== INICIALIZAÇÃO ====================
         async function loadUserAndFamily() {
@@ -725,6 +726,8 @@
             }
 
             registrarPush();
+
+            familyReady = true;
 
             if (profile?.family_id) {
                 currentFamilyId = profile.family_id;
@@ -1086,6 +1089,14 @@
         }
 
         function openAddChildModal() {
+            if (!familyReady) {
+                showToast('Aguarde o carregamento dos dados...', 'info');
+                return;
+            }
+            if (!currentFamilyId) {
+                showToast('Crie uma família antes de cadastrar uma criança.', 'error');
+                return;
+            }
             document.getElementById('modalTitle').innerText = 'Adicionar Criança';
             document.getElementById('childId').value = '';
             document.getElementById('childName').value = '';
@@ -1141,29 +1152,40 @@
             }, 3000);
         }
 
+        let savingChild = false;
+
         async function saveChild() {
-            const childId = document.getElementById('childId').value;
-            const name = document.getElementById('childName').value.trim();
-            const birthDate = document.getElementById('childBirthDate').value;
-            const allergies = document.getElementById('childAllergies').value.trim();
-            const specialNeeds = document.getElementById('childSpecialNeeds').value.trim();
-            const photoFile = document.getElementById('childPhoto').files[0];
-            if (!name) { alert('O nome da criança é obrigatório.'); return; }
-            let photoUrl = null;
-            if (photoFile) {
-                const formData = new FormData();
-                formData.append('image', photoFile);
-                try {
-                    photoUrl = await uploadImagem(formData);
-                } catch (err) { alert('Erro ao enviar a foto.'); return; }
+            if (savingChild) return;
+            savingChild = true;
+            const saveBtn = document.getElementById('saveChildBtn');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando...'; }
+            try {
+                const childId = document.getElementById('childId').value;
+                const name = document.getElementById('childName').value.trim();
+                const birthDate = document.getElementById('childBirthDate').value;
+                const allergies = document.getElementById('childAllergies').value.trim();
+                const specialNeeds = document.getElementById('childSpecialNeeds').value.trim();
+                const photoFile = document.getElementById('childPhoto').files[0];
+                if (!name) { alert('O nome da criança é obrigatório.'); return; }
+                let photoUrl = null;
+                if (photoFile) {
+                    const formData = new FormData();
+                    formData.append('image', photoFile);
+                    try {
+                        photoUrl = await uploadImagem(formData);
+                    } catch (err) { alert('Erro ao enviar a foto.'); return; }
+                }
+                const childData = { name, birth_date: birthDate || null, allergies: allergies || null, special_needs: specialNeeds || null, family_id: currentFamilyId, is_active: true };
+                if (photoUrl) childData.photo_url = photoUrl;
+                let result;
+                if (childId) result = await supabaseClient.from('kids_children').update(childData).eq('id', childId).eq('family_id', currentFamilyId);
+                else result = await supabaseClient.from('kids_children').insert([childData]);
+                if (result.error) alert('Erro ao salvar: ' + result.error.message);
+                else { showToast(childId ? 'Criança atualizada!' : 'Criança adicionada!'); closeChildModal(); await loadChildren(); }
+            } finally {
+                savingChild = false;
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
             }
-            const childData = { name, birth_date: birthDate || null, allergies: allergies || null, special_needs: specialNeeds || null, family_id: currentFamilyId, is_active: true };
-            if (photoUrl) childData.photo_url = photoUrl;
-            let result;
-            if (childId) result = await supabaseClient.from('kids_children').update(childData).eq('id', childId).eq('family_id', currentFamilyId);
-            else result = await supabaseClient.from('kids_children').insert([childData]);
-            if (result.error) alert('Erro ao salvar: ' + result.error.message);
-            else { showToast(childId ? 'Criança atualizada!' : 'Criança adicionada!'); closeChildModal(); await loadChildren(); }
         }
 
         async function deleteChild(childId) {

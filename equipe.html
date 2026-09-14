@@ -1039,7 +1039,10 @@
                 if (btn) {
                     const room = btn.dataset.room;
                     confirmCheckinWithRoom(room);
+                    return;
                 }
+                // Clique no fundo escuro fecha o modal.
+                if (e.target === e.currentTarget) closeSelectRoomModal();
             });
         }
 
@@ -1390,9 +1393,7 @@
                 idadeHtml = `<div style="color: var(--text-light); font-size:0.9rem;">📅 Idade: ${idade} anos</div>`;
             }
 
-            const fotoHtml = extra.photoUrl
-                ? `<img src="${safeUrl(extra.photoUrl)}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto 0.5rem;display:block;border:2px solid var(--border-color);">`
-                : `<div style="width:72px;height:72px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 0.5rem;">👶</div>`;
+            const fotoHtml = avatarHtml(extra.photoUrl, 72, { border: 2 });
 
             let contatosHtml = '';
             if (extra.isVisitor) {
@@ -1431,74 +1432,89 @@
         async function confirmCheckinWithRoom(room) {
             if (!pendingCheckinData) return;
             const { tokenId, childId, childName, allergies, tokenValue, birthDate } = pendingCheckinData;
+            // Anula já o pendente: impede confirmação duplicada (duplo toque)
+            // e libera o próximo scan sem esperar push/impressão.
             pendingCheckinData = null;
+            // Fecha o modal imediatamente (antes de qualquer await), para nunca
+            // ficar preso enquanto o check-in, push e impressão acontecem.
+            closeSelectRoomModal();
             if (!currentSessionId) {
                 showToast('Sessão não carregada. Recarregue a página.', 'error');
-                closeSelectRoomModal();
                 return;
             }
-            const badgeNumber = null;
-            const { data: childData, error: childError } = await supabaseClient
-                .from('kids_children')
-                .select('*, family:family_id(*)')
-                .eq('id', childId)
-                .single();
-            if (childError || !childData) {
-                showToast('Erro ao buscar dados da criança', 'error');
-                closeSelectRoomModal();
-                return;
-            }
-            const family = childData.family || {};
-            const { data: newCheckin, error: insertError } = await supabaseClient
-                .from('kids_check_ins')
-                .insert({
-                    child_id: childId,
-                    session_id: currentSessionId,
-                    checked_in_by: currentStaffId,
-                    token_id: tokenId,
-                    room: room,
-                    badge_number: badgeNumber
-                })
-                .select()
-                .single();
-            if (insertError) {
-                showToast('Erro no check‑in', 'error');
-                document.getElementById('scanResult').innerHTML = '❌ Erro no check‑in.';
-            } else {
+            try {
+                const badgeNumber = null;
+                const { data: childData, error: childError } = await supabaseClient
+                    .from('kids_children')
+                    .select('*, family:family_id(*)')
+                    .eq('id', childId)
+                    .single();
+                if (childError || !childData) {
+                    showToast('Erro ao buscar dados da criança', 'error');
+                    return;
+                }
+                const family = childData.family || {};
+                document.getElementById('scanResult').innerHTML = `⏳ Registrando check-in de ${escapeHtml(childName)}...`;
+                const { data: newCheckin, error: insertError } = await supabaseClient
+                    .from('kids_check_ins')
+                    .insert({
+                        child_id: childId,
+                        session_id: currentSessionId,
+                        checked_in_by: currentStaffId,
+                        token_id: tokenId,
+                        room: room,
+                        badge_number: badgeNumber
+                    })
+                    .select()
+                    .single();
+                if (insertError) {
+                    showToast('Erro no check‑in', 'error');
+                    document.getElementById('scanResult').innerHTML = '❌ Erro no check‑in.';
+                    return;
+                }
                 const roomDisplay = room === 'todos' ? 'Todos' : room;
                 document.getElementById('scanResult').innerHTML = `✅ Check‑in: ${escapeHtml(childName)} (${escapeHtml(roomDisplay)})`;
                 showToast(`Check‑in: ${childName} - Sala ${roomDisplay}`, 'success');
-                await loadPresentList();
-                let idade = '';
-                if (birthDate) {
-                    const idadeNum = calcularIdade(birthDate);
-                    idade = `${idadeNum} anos`;
-                }
-                await enviarPush({
-                    event: 'checkin',
-                    checkinId: newCheckin.id,
-                    childId: childId,
-                    childName: childName,
-                    room: room
-                });
-                if (estaNaJanelaAniversario(birthDate)) {
-                    await enviarPush({
-                        event: 'aniversario_checkin',
-                        childId: childId,
-                        childName: childName
-                    });
-                }
-                const isVisitor = !!childData.is_visitor;
-                const fatherPhone = isVisitor ? (childData.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
-                const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
+
+                // Pós-check-in (melhor esforço): lista, push e impressão não
+                // podem travar nem reabrir o modal.
                 try {
+                    await loadPresentList();
+                    let idade = '';
+                    if (birthDate) {
+                        const idadeNum = calcularIdade(birthDate);
+                        idade = `${idadeNum} anos`;
+                    }
+                    await enviarPush({
+                        event: 'checkin',
+                        checkinId: newCheckin.id,
+                        childId: childId,
+                        childName: childName,
+                        room: room
+                    });
+                    if (estaNaJanelaAniversario(birthDate)) {
+                        await enviarPush({
+                            event: 'aniversario_checkin',
+                            childId: childId,
+                            childName: childName
+                        });
+                    }
+                    const isVisitor = !!childData.is_visitor;
+                    const fatherPhone = isVisitor ? (childData.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
+                    const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
                     await printLabel(tokenValue, childName, allergies, idade, fatherPhone, motherPhone, newCheckin.id, {
                         isVisitor,
                         respName: childData.visitor_responsible_name || ''
                     });
-                } catch (e) {}
+                } catch (e) {
+                    console.error('Pós check-in (não crítico):', e);
+                }
+            } catch (e) {
+                console.error('Erro no check-in:', e);
+                showToast('Erro inesperado no check‑in', 'error');
+            } finally {
+                closeSelectRoomModal();
             }
-            closeSelectRoomModal();
         }
 
         // ========== IMPRIMIR ETIQUETA (RawBT) ==========
@@ -1761,8 +1777,9 @@
                     <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
                         <!-- Card do Pai -->
                         <div style="flex:1; min-width:140px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.8rem; border:1px solid var(--border-color);">
-                            <div style="width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
-                                ${family.father_photo_url ? `<img src="${safeUrl(family.father_photo_url)}" style="width:100%;height:100%;object-fit:cover;">` : '👨'}
+                            <div style="position:relative;width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                                👨
+                                ${family.father_photo_url ? `<img src="${safeUrl(family.father_photo_url)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">` : ''}
                             </div>
                             <div><strong>Pai:</strong> ${escapeHtml(family.father_name) || 'Não informado'}</div>
                             <div style="font-size:0.85rem; color:var(--text-light);">📞 ${escapeHtml(family.father_phone) || '-'}</div>
@@ -1775,8 +1792,9 @@
         
                         <!-- Card da Mãe -->
                         <div style="flex:1; min-width:140px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.8rem; border:1px solid var(--border-color);">
-                            <div style="width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
-                                ${family.mother_photo_url ? `<img src="${safeUrl(family.mother_photo_url)}" style="width:100%;height:100%;object-fit:cover;">` : '👩'}
+                            <div style="position:relative;width:60px;height:60px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                                👩
+                                ${family.mother_photo_url ? `<img src="${safeUrl(family.mother_photo_url)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">` : ''}
                             </div>
                             <div><strong>Mãe:</strong> ${escapeHtml(family.mother_name) || 'Não informado'}</div>
                             <div style="font-size:0.85rem; color:var(--text-light);">📞 ${escapeHtml(family.mother_phone) || '-'}</div>
@@ -1793,7 +1811,7 @@
             const html = `
                 <button class="modal-close" onclick="closeChildDetailsModal()">&times;</button>
                 <div style="text-align:center;">
-                    ${child.photo_url ? `<img src="${safeUrl(child.photo_url)}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:0.5rem;">` : '<div style="width:100px;height:100px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3rem;margin:0 auto 0.5rem;">👶</div>'}
+                    ${avatarHtml(child.photo_url, 100)}
                     <h3 style="margin:0.2rem 0;">${escapeHtml(child.name)} ${isVisitor ? `<span class="badge" style="background:var(--accent); color:#fff;">visitante</span>` : ''}</h3>
                     <p style="margin:0.2rem 0;"><strong>📅 Nascimento:</strong> ${child.birth_date ? formatDate(child.birth_date) : 'Não informado'}</p>
                     <p style="margin:0.2rem 0;"><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies) || 'Nenhuma'}</p>
@@ -1920,7 +1938,7 @@
             const container = document.getElementById('roomChildrenList');
             container.innerHTML = childrenForRoom.map(child => `
                 <div class="room-item">
-                    ${child.photo ? `<img src="${safeUrl(child.photo)}" onerror="this.src='https://via.placeholder.com/40'">` : '<div style="width:45px;height:45px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;">👶</div>'}
+                    ${avatarHtml(child.photo, 45, { margin: '0' })}
                     <label style="flex:1;">
                         <input type="checkbox" class="room-checkbox" data-checkin-id="${child.checkinId}" ${child.currentRoom === pendingRoom ? 'checked' : ''}>
                         ${escapeHtml(child.name)} ${child.birth_date ? `(${calcularIdade(child.birth_date)} anos)` : ''}
@@ -2082,7 +2100,7 @@
 
             const html = `
                 <div style="text-align:center;">
-                    ${child.photo_url ? `<img src="${safeUrl(child.photo_url)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:0.5rem;">` : '<div style="width:80px;height:80px;background:var(--border-color);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 0.5rem;">👶</div>'}
+                    ${avatarHtml(child.photo_url, 80)}
                     <h3 style="margin:0.2rem 0;">${escapeHtml(child.name)}</h3>
                     <p style="margin:0.2rem 0;"><strong>📅 Idade:</strong> ${idade}</p>
                     ${child.allergies ? `<p style="margin:0.2rem 0;"><strong>⚠️ Alergias:</strong> ${escapeHtml(child.allergies)}</p>` : ''}
@@ -2094,8 +2112,9 @@
                 <div style="display:flex; gap:0.7rem; justify-content:center; flex-wrap:wrap;">
                     <!-- Card do Pai -->
                     <div style="flex:1; min-width:130px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.7rem; border:1px solid var(--border-color);">
-                        <div style="width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
-                            ${family.father_photo_url ? `<img src="${safeUrl(family.father_photo_url)}" style="width:100%;height:100%;object-fit:cover;">` : '👨'}
+                        <div style="position:relative;width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                            👨
+                            ${family.father_photo_url ? `<img src="${safeUrl(family.father_photo_url)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">` : ''}
                         </div>
                         <div style="font-size:0.85rem;"><strong>Pai:</strong> ${escapeHtml(family.father_name) || 'Não informado'}</div>
                         <div style="font-size:0.78rem; color:var(--text-light);">📞 ${escapeHtml(family.father_phone) || '-'}</div>
@@ -2108,8 +2127,9 @@
 
                     <!-- Card da Mãe -->
                     <div style="flex:1; min-width:130px; text-align:center; background:var(--input-bg); border-radius:var(--radius-md); padding:0.7rem; border:1px solid var(--border-color);">
-                        <div style="width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
-                            ${family.mother_photo_url ? `<img src="${safeUrl(family.mother_photo_url)}" style="width:100%;height:100%;object-fit:cover;">` : '👩'}
+                        <div style="position:relative;width:50px;height:50px;border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 0.3rem;overflow:hidden;">
+                            👩
+                            ${family.mother_photo_url ? `<img src="${safeUrl(family.mother_photo_url)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">` : ''}
                         </div>
                         <div style="font-size:0.85rem;"><strong>Mãe:</strong> ${escapeHtml(family.mother_name) || 'Não informado'}</div>
                         <div style="font-size:0.78rem; color:var(--text-light);">📞 ${escapeHtml(family.mother_phone) || '-'}</div>
@@ -2592,6 +2612,24 @@
                 if (u.protocol === 'http:' || u.protocol === 'https:') return escapeHtml(u.href);
             } catch (e) {}
             return '';
+        }
+        // Foto com placeholder imediato: mostra o emoji na hora e só o troca
+        // pela imagem quando ela terminar de carregar (evita area quebrada
+        // enquanto a foto demora ou falha).
+        function avatarHtml(url, size, opts = {}) {
+            const px = size + 'px';
+            const emoji = opts.emoji || '👶';
+            const margin = opts.margin != null ? opts.margin : '0 auto 0.5rem';
+            const border = opts.border ? `border:${opts.border} solid var(--border-color);` : '';
+            const base = `width:${px};height:${px};border-radius:50%;background:var(--border-color);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.55)}px;`;
+            const safe = url ? safeUrl(url) : '';
+            if (!safe) {
+                return `<div style="${base}margin:${margin};">${emoji}</div>`;
+            }
+            return `<div style="position:relative;width:${px};height:${px};margin:${margin};">`
+                + `<div style="position:absolute;inset:0;${base}">${emoji}</div>`
+                + `<img src="${safe}" alt="" decoding="async" style="position:absolute;inset:0;width:${px};height:${px};border-radius:50%;object-fit:cover;${border}display:none;" onload="this.style.display='block'" onerror="this.remove()">`
+                + `</div>`;
         }
         async function logout() { await encerrarSessao('index.html'); }
 
