@@ -1060,16 +1060,14 @@
        async function loadSessions() {
             const select = document.getElementById('sessionSelect');
 
-            // So gerencia a sessao do domingo no proprio domingo, para nao
-            // criar/ativar a sessao da proxima semana nem desativar a atual
-            // durante a semana.
+            // Garante sempre a sessao do proximo domingo: a partir de segunda
+            // a sessao automatica ja aponta para o proximo domingo (no domingo,
+            // aponta para o proprio domingo).
             let sessionId = null;
-            if (diaSemanaSP() === 0) {
-                try {
-                    sessionId = await getOrCreateSundaySession();
-                } catch (e) {
-                    console.error('Erro ao preparar sessão do domingo:', e);
-                }
+            try {
+                sessionId = await getOrCreateSundaySession();
+            } catch (e) {
+                console.error('Erro ao preparar sessão do domingo:', e);
             }
 
             const { data: todas, error } = await supabaseClient
