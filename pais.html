@@ -364,6 +364,22 @@
             resize: vertical;
             min-height: 60px;
         }
+        .campo-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem 0 0.2rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .campo-check input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: scale(1.3);
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
         .btn-primary {
             background: #3b82f6;
             color: white;
@@ -574,10 +590,16 @@
             <input type="text" id="childName" placeholder="Ex: Maria Silva" required>
             <label>Data de nascimento</label>
             <input type="date" id="childBirthDate">
-            <label>Alergias (opcional)</label>
-            <textarea id="childAllergies" placeholder="Ex: leite, amendoim, lactose..."></textarea>
-            <label>Necessidades especiais (opcional)</label>
-            <textarea id="childSpecialNeeds" placeholder="Ex: autismo, TDAH, mobilidade reduzida..."></textarea>
+            <label class="campo-check">
+                <input type="checkbox" id="childHasAllergies" onchange="toggleCampoExtra('childHasAllergies', 'childAllergies')">
+                Possui alergia?
+            </label>
+            <textarea id="childAllergies" placeholder="Ex: leite, amendoim, lactose..." style="display:none;"></textarea>
+            <label class="campo-check">
+                <input type="checkbox" id="childHasSpecialNeeds" onchange="toggleCampoExtra('childHasSpecialNeeds', 'childSpecialNeeds')">
+                Possui necessidades especiais?
+            </label>
+            <textarea id="childSpecialNeeds" placeholder="Ex: autismo, TDAH, mobilidade reduzida..." style="display:none;"></textarea>
             <label>Foto da criança</label>
             <input type="file" id="childPhoto" accept="image/jpeg, image/png, image/webp">
             <div id="currentPhotoPreview" class="photo-preview"></div>
@@ -1154,8 +1176,12 @@
             document.getElementById('childId').value = '';
             document.getElementById('childName').value = '';
             document.getElementById('childBirthDate').value = '';
+            document.getElementById('childHasAllergies').checked = false;
             document.getElementById('childAllergies').value = '';
+            document.getElementById('childAllergies').style.display = 'none';
+            document.getElementById('childHasSpecialNeeds').checked = false;
             document.getElementById('childSpecialNeeds').value = '';
+            document.getElementById('childSpecialNeeds').style.display = 'none';
             document.getElementById('childPhoto').value = '';
             document.getElementById('currentPhotoPreview').innerHTML = '';
             document.getElementById('childModal').style.display = 'flex';
@@ -1176,8 +1202,14 @@
             document.getElementById('childId').value = child.id;
             document.getElementById('childName').value = child.name || '';
             document.getElementById('childBirthDate').value = child.birth_date || '';
+            const temAlergia = !!(child.allergies && String(child.allergies).trim());
+            document.getElementById('childHasAllergies').checked = temAlergia;
             document.getElementById('childAllergies').value = child.allergies || '';
+            document.getElementById('childAllergies').style.display = temAlergia ? 'block' : 'none';
+            const temNecessidade = !!(child.special_needs && String(child.special_needs).trim());
+            document.getElementById('childHasSpecialNeeds').checked = temNecessidade;
             document.getElementById('childSpecialNeeds').value = child.special_needs || '';
+            document.getElementById('childSpecialNeeds').style.display = temNecessidade ? 'block' : 'none';
             document.getElementById('childPhoto').value = '';
             const previewDiv = document.getElementById('currentPhotoPreview');
             if (child.photo_url) {
@@ -1216,8 +1248,10 @@
                 const childId = document.getElementById('childId').value;
                 const name = document.getElementById('childName').value.trim();
                 const birthDate = document.getElementById('childBirthDate').value;
-                const allergies = document.getElementById('childAllergies').value.trim();
-                const specialNeeds = document.getElementById('childSpecialNeeds').value.trim();
+                const allergies = document.getElementById('childHasAllergies').checked
+                    ? document.getElementById('childAllergies').value.trim() : '';
+                const specialNeeds = document.getElementById('childHasSpecialNeeds').checked
+                    ? document.getElementById('childSpecialNeeds').value.trim() : '';
                 const photoFile = document.getElementById('childPhoto').files[0];
                 if (!name) { alert('O nome da criança é obrigatório.'); return; }
                 let photoUrl = null;
@@ -1247,6 +1281,14 @@
         }
 
         function closeChildModal() { document.getElementById('childModal').style.display = 'none'; }
+
+        // Mostra/oculta o campo de texto conforme o checkbox (alergia/necessidades).
+        function toggleCampoExtra(checkId, campoId) {
+            const marcado = document.getElementById(checkId).checked;
+            const campo = document.getElementById(campoId);
+            campo.style.display = marcado ? 'block' : 'none';
+            if (marcado) campo.focus();
+        }
 
         // ==================== QR CODE ====================
         async function generateQR() {
