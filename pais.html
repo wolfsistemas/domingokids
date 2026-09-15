@@ -675,8 +675,11 @@
                 </div>
             </div>
 
-            <div style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #e2e8f0; text-align: center;">
+            <div id="sairFamiliaWrap" style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #e2e8f0; text-align: center; display: none;">
                 <button type="button" class="btn-outline" style="color:#dc2626; border-color:#fecaca; width:auto; padding:0.6rem 1.2rem;" onclick="sairDaFamilia()">Sair da família</button>
+            </div>
+            <div id="donoFamiliaNota" style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #e2e8f0; text-align: center; font-size: 0.8rem; color: #94a3b8; display: none;">
+                Você criou esta família, por isso não pode sair dela.
             </div>
         </div>
     </div>
@@ -880,6 +883,7 @@
             if (msg.includes('ja_tem_familia')) return 'Você já pertence a uma família.';
             if (msg.includes('sem_familia')) return 'Você não está vinculado a nenhuma família.';
             if (msg.includes('sem_permissao')) return 'Apenas quem criou a família pode fazer isso.';
+            if (msg.includes('dono_nao_pode_sair')) return 'Você criou esta família, por isso não pode sair dela.';
             if (msg.includes('nao_autenticado')) return 'Sessão expirada. Entre novamente.';
             return 'Não foi possível concluir. Tente novamente.';
         }
@@ -1015,6 +1019,10 @@
 
         // Sair da família (desvincula o perfil; os dados continuam com a família).
         async function sairDaFamilia() {
+            if (souDonoFamilia) {
+                showToast('Você criou esta família, por isso não pode sair dela.', 'error');
+                return;
+            }
             if (!confirm('Tem certeza que deseja sair da família? Você deixará de ver as crianças e os dados dela.')) return;
             const { error } = await supabaseClient.rpc('kids_leave_family');
             if (error) {
@@ -1069,6 +1077,10 @@
                 document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${escapeHtml(family.cell_group || 'não informada')}`;
                 window.currentFamilyData = family;
                 souDonoFamilia = !!(currentUser && family.owner_id && family.owner_id === currentUser.id);
+                const wrapSair = document.getElementById('sairFamiliaWrap');
+                const notaDono = document.getElementById('donoFamiliaNota');
+                if (wrapSair) wrapSair.style.display = souDonoFamilia ? 'none' : 'block';
+                if (notaDono) notaDono.style.display = souDonoFamilia ? 'block' : 'none';
                 sincronizarIndicadoresCadastro(family);
             }
         }
