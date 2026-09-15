@@ -97,28 +97,25 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* Indicador de cadastro incompleto (nome/telefone) */
-        .pos-rel { position: relative; }
-        .dot-pendente {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+        /* Balaozinho de cadastro incompleto (nome/telefone) */
+        .badge-pendente {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
             background: #ef4444;
-            border: 2px solid #ffffff;
-            box-shadow: 0 1px 3px rgba(239,68,68,0.6);
-            display: inline-block;
-            z-index: 2;
-            pointer-events: auto;
-        }
-        .dot-pendente--inline {
-            position: static;
-            margin-left: 6px;
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0.3rem 0.6rem;
+            border-radius: 999px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(239,68,68,0.45);
+            border: none;
+            cursor: pointer;
             vertical-align: middle;
-            border-color: #ffffff;
         }
+        .badge-pendente:hover { background: #dc2626; }
 
         .container {
             max-width: 700px;
@@ -541,6 +538,7 @@
     <div class="header">
         <div class="header-buttons">
             <!--<button class="btn-header" onclick="openHistoryModal()">📜 Histórico</button>-->
+            <button type="button" id="configPendenteBadge" class="badge-pendente" style="display:none;" onclick="openConfigModal()">Complete o cadastro</button>
             <button class="btn-header" id="configBtn" onclick="openConfigModal()">⚙️</button>
             <button class="btn-header" onclick="logout()">Sair</button>
         </div>
@@ -639,6 +637,7 @@
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; color: #0f172a;" id="fatherNameDisplay">Pai não informado</div>
                                 <div style="font-size: 0.85rem; color: #475569; margin-top: 4px;" id="fatherPhoneDisplay">📞 -</div>
+                                <span id="fatherPendenteBadge" class="badge-pendente" style="display:none; margin-top:0.45rem;">Complete o cadastro</span>
                             </div>
                             <button class="btn-edit-card" onclick="openEditFatherModal()">✏️</button>
                         </div>
@@ -649,6 +648,7 @@
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; color: #0f172a;" id="motherNameDisplay">Mãe não informada</div>
                                 <div style="font-size: 0.85rem; color: #475569; margin-top: 4px;" id="motherPhoneDisplay">📞 -</div>
+                                <span id="motherPendenteBadge" class="badge-pendente" style="display:none; margin-top:0.45rem;">Complete o cadastro</span>
                             </div>
                             <button class="btn-edit-card" onclick="openEditMotherModal()">✏️</button>
                         </div>
@@ -861,7 +861,7 @@
         }
 
         // ==================== INDICADOR DE CADASTRO INCOMPLETO ====================
-        // Responsáveis com nome/telefone faltando (usado no ponto vermelho).
+        // Responsáveis com nome/telefone faltando.
         function responsaveisIncompletos(family) {
             const f = family || {};
             const faltando = [];
@@ -870,26 +870,18 @@
             return faltando;
         }
 
-        // Adiciona/remove o ponto vermelho em um elemento (inline quando solicitado).
-        function aplicarDotPendente(id, ativo, titulo, inline) {
+        // Mostra/oculta o balaozinho "Complete o cadastro".
+        function aplicarBadgePendente(id, ativo) {
             const el = document.getElementById(id);
             if (!el) return;
-            const anterior = el.querySelector('.dot-pendente');
-            if (anterior) anterior.remove();
-            if (!ativo) return;
-            const dot = document.createElement('span');
-            dot.className = 'dot-pendente' + (inline ? ' dot-pendente--inline' : '');
-            dot.title = titulo || 'Cadastro incompleto';
-            if (!inline) el.classList.add('pos-rel');
-            el.appendChild(dot);
+            el.style.display = ativo ? 'inline-flex' : 'none';
         }
 
         function sincronizarIndicadoresCadastro(family) {
             const faltando = responsaveisIncompletos(family);
-            const titulo = 'Cadastro incompleto: ' + faltando.join(', ');
-            aplicarDotPendente('fatherNameDisplay', faltando.includes('pai'), 'Pai: informe nome e telefone', true);
-            aplicarDotPendente('motherNameDisplay', faltando.includes('mãe'), 'Mãe: informe nome e telefone', true);
-            aplicarDotPendente('configBtn', faltando.length > 0, titulo, false);
+            aplicarBadgePendente('configPendenteBadge', faltando.length > 0);
+            aplicarBadgePendente('fatherPendenteBadge', faltando.includes('pai'));
+            aplicarBadgePendente('motherPendenteBadge', faltando.includes('mãe'));
         }
 
         // ==================== EDIÇÃO DO NOME DA FAMÍLIA ====================
