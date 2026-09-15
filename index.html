@@ -686,6 +686,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/biometria.js?v=2"></script>
     <script>
+        // ==================== CONVITE DE FAMILIA (?convite=XXXXXX) ====================
+        // Guarda o codigo para resgatar depois do login/cadastro em pais.html.
+        try {
+            const conviteUrl = new URLSearchParams(window.location.search).get('convite');
+            const conviteLimpo = (conviteUrl || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (conviteLimpo.length === 6) {
+                sessionStorage.setItem('dk_convite', conviteLimpo);
+            }
+        } catch (e) { /* ignora */ }
+
         // ==================== CONFIGURAÇÃO ====================
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY, {
             auth: {

@@ -653,7 +653,7 @@
                             <button class="btn-edit-card" onclick="openEditMotherModal()">✏️</button>
                         </div>
                     </div>
-                    <div style="background: #fafcff; border-radius: 1.2rem; padding: 0.8rem; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s;" onclick="showToast('Funcionalidade disponível em Breve', 'error')">
+                    <div style="background: #fafcff; border-radius: 1.2rem; padding: 0.8rem; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: 0.2s;" onclick="abrirCompartilharFamilia()">
                         <span style="font-size: 1.2rem;">➕</span>
                         <span style="font-size: 0.9rem; color: #3b82f6;">Adicionar outro responsável</span>
                     </div>
@@ -672,6 +672,32 @@
                     <div id="addressDisplay" style="margin-bottom: 6px;">Endereço não informado</div>
                     <div id="cellGroupDisplay" style="font-size: 0.85rem; color: #475569;">Célula: não informada</div>
                 </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #e2e8f0; text-align: center;">
+                <button type="button" class="btn-outline" style="color:#dc2626; border-color:#fecaca; width:auto; padding:0.6rem 1.2rem;" onclick="sairDaFamilia()">Sair da família</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de compartilhamento da família -->
+    <div id="shareFamilyModal" class="modal">
+        <div class="modal-content" style="max-width: 460px; text-align: center;">
+            <button class="modal-close" onclick="fecharCompartilharFamilia()">&times;</button>
+            <h3 style="margin-bottom: 0.5rem;">👨‍👩‍👧 Adicionar responsável</h3>
+            <p style="font-size: 0.9rem; color: #475569; margin-bottom: 1.2rem;">Envie o código abaixo para o outro responsável. Ele cria a própria conta e digita o código (ou abre o link) para ver as mesmas crianças.</p>
+
+            <div id="shareCodeDisplay" data-codigo="" style="font-size: 2.4rem; font-weight: 800; letter-spacing: 0.35em; color: #0f172a; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 1rem 0.5rem;">...</div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1.2rem;">
+                <button class="btn-outline" style="flex:1; width:auto;" onclick="copiarCodigoFamilia()">Copiar código</button>
+                <button class="btn-outline" style="flex:1; width:auto;" onclick="copiarLinkConvite()">Copiar link</button>
+            </div>
+            <button class="btn-primary" style="margin-top: 0.6rem;" onclick="compartilharWhatsApp()">Enviar no WhatsApp</button>
+
+            <div style="margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                <button type="button" style="background:none; border:none; color:#64748b; font-size:0.85rem; cursor:pointer; text-decoration:underline;" onclick="regenerarCodigoFamilia()">Gerar novo código</button>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem;">Ao gerar um novo, o código anterior para de funcionar.</div>
             </div>
         </div>
     </div>
@@ -749,9 +775,21 @@
         let currentUser = null;
         let currentFamilyData = {};
         let familyReady = false;
+        let souDonoFamilia = false;
+        let codigoConvitePendente = null;
 
         // ==================== INICIALIZAÇÃO ====================
         async function loadUserAndFamily() {
+            try {
+                const paramsConvite = new URLSearchParams(window.location.search);
+                const doUrl = paramsConvite.get('convite');
+                const daSessao = sessionStorage.getItem('dk_convite');
+                const bruto = (doUrl || daSessao || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                codigoConvitePendente = bruto.length === 6 ? bruto : null;
+            } catch (e) {
+                codigoConvitePendente = null;
+            }
+
             const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
             if (userError || !user) {
                 window.location.href = 'index.html';
@@ -786,9 +824,28 @@
                     <div class="card">
                         <p>Você ainda não possui uma família vinculada.</p>
                         <button class="btn-primary" onclick="createFamily()">Criar nova família</button>
+                        <div style="margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid #e2e8f0; text-align:left;">
+                            <label style="display:block; font-size:0.9rem; color:#475569; margin-bottom:0.4rem;">Já tem o código da família? Digite abaixo:</label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="inputCodigoConvite" maxlength="6" placeholder="Ex: A3F9K2" autocomplete="off" autocapitalize="characters" style="flex:1; text-transform:uppercase; letter-spacing:0.2em; font-weight:700; text-align:center;">
+                                <button class="btn-primary" style="width:auto; padding:0 1.2rem;" onclick="entrarComCodigo()">Entrar</button>
+                            </div>
+                            <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.4rem;">O código tem 6 letras/números e é fornecido por quem criou a família.</div>
+                        </div>
                     </div>
                 `;
                 document.getElementById('qrSection').style.display = 'none';
+
+                const inputConvite = document.getElementById('inputCodigoConvite');
+                if (inputConvite) {
+                    inputConvite.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') entrarComCodigo();
+                    });
+                    if (codigoConvitePendente) {
+                        inputConvite.value = codigoConvitePendente;
+                        entrarComCodigo();
+                    }
+                }
             }
         }
 
@@ -811,6 +868,160 @@
             await loadChildren();
             await loadLastRegister();
             await loadFamilyData();
+        }
+
+        // ==================== COMPARTILHAMENTO DA FAMÍLIA ====================
+        // Mensagens amigáveis para os erros retornados pelas RPCs.
+        function mensagemErroConvite(err) {
+            const msg = (err && err.message ? err.message : '').toLowerCase();
+            if (msg.includes('rate_limited')) return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+            if (msg.includes('codigo_invalido')) return 'Código inválido. Confira com quem te enviou.';
+            if (msg.includes('ja_tem_familia')) return 'Você já pertence a uma família.';
+            if (msg.includes('sem_familia')) return 'Você não está vinculado a nenhuma família.';
+            if (msg.includes('sem_permissao')) return 'Apenas quem criou a família pode fazer isso.';
+            if (msg.includes('nao_autenticado')) return 'Sessão expirada. Entre novamente.';
+            return 'Não foi possível concluir. Tente novamente.';
+        }
+
+        // Entrar em uma família existente com o código de convite.
+        async function entrarComCodigo() {
+            const input = document.getElementById('inputCodigoConvite');
+            const codigo = (input ? input.value : '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (codigo.length !== 6) {
+                showToast('Digite o código de 6 caracteres.', 'error');
+                return;
+            }
+
+            const btn = input ? input.nextElementSibling : null;
+            if (btn) { btn.disabled = true; btn.innerText = 'Entrando...'; }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .rpc('kids_join_family_by_code', { p_code: codigo });
+                if (error) throw error;
+
+                sessionStorage.removeItem('dk_convite');
+                codigoConvitePendente = null;
+                currentFamilyId = data.family_id;
+                showToast('Você entrou na família ' + (data.family_name || '') + '!');
+                document.getElementById('qrSection').style.display = 'block';
+                await loadChildren();
+                await loadLastRegister();
+                await loadFamilyData();
+            } catch (err) {
+                showToast(mensagemErroConvite(err), 'error');
+                if (btn) { btn.disabled = false; btn.innerText = 'Entrar'; }
+            }
+        }
+
+        // Abrir o card de compartilhamento (somente dono).
+        async function abrirCompartilharFamilia() {
+            if (!souDonoFamilia) {
+                showToast('Apenas quem criou a família pode adicionar responsáveis.', 'error');
+                return;
+            }
+            closeConfigModal();
+            document.getElementById('shareFamilyModal').style.display = 'flex';
+            await carregarCodigoFamilia();
+        }
+
+        function fecharCompartilharFamilia() {
+            document.getElementById('shareFamilyModal').style.display = 'none';
+        }
+
+        async function carregarCodigoFamilia() {
+            const el = document.getElementById('shareCodeDisplay');
+            el.innerText = '...';
+            el.dataset.codigo = '';
+            const { data, error } = await supabaseClient
+                .from('kids_family_codes')
+                .select('code')
+                .eq('family_id', currentFamilyId)
+                .maybeSingle();
+            if (error || !data) {
+                el.innerText = '------';
+                showToast('Não foi possível carregar o código.', 'error');
+                return;
+            }
+            el.innerText = data.code;
+            el.dataset.codigo = data.code;
+        }
+
+        function linkConvite(codigo) {
+            const base = new URL('index.html', window.location.href);
+            base.searchParams.set('convite', codigo);
+            return base.href;
+        }
+
+        async function copiarTexto(texto, mensagemOk) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(texto);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = texto;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    ta.remove();
+                }
+                showToast(mensagemOk || 'Copiado!');
+            } catch (e) {
+                showToast('Não foi possível copiar.', 'error');
+            }
+        }
+
+        function copiarCodigoFamilia() {
+            const el = document.getElementById('shareCodeDisplay');
+            copiarTexto(el.dataset.codigo || el.innerText, 'Código copiado!');
+        }
+
+        function copiarLinkConvite() {
+            const el = document.getElementById('shareCodeDisplay');
+            const codigo = el.dataset.codigo || el.innerText;
+            if (!codigo || codigo === '------') return;
+            copiarTexto(linkConvite(codigo), 'Link copiado!');
+        }
+
+        function compartilharWhatsApp() {
+            const el = document.getElementById('shareCodeDisplay');
+            const codigo = el.dataset.codigo || el.innerText;
+            if (!codigo || codigo === '------') return;
+            const nome = (window.currentFamilyData && window.currentFamilyData.family_name) || 'nossa família';
+            const texto = 'Olá! Entre no Domingo Kids com o código da ' + nome + ': ' + codigo +
+                '\n\nOu use este link: ' + linkConvite(codigo);
+            window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+        }
+
+        async function regenerarCodigoFamilia() {
+            if (!souDonoFamilia) {
+                showToast('Apenas quem criou a família pode gerar um novo código.', 'error');
+                return;
+            }
+            if (!confirm('Gerar um novo código? O código atual deixará de funcionar.')) return;
+            const { data, error } = await supabaseClient.rpc('kids_regenerate_family_code');
+            if (error) {
+                showToast(mensagemErroConvite(error), 'error');
+                return;
+            }
+            const el = document.getElementById('shareCodeDisplay');
+            el.innerText = data;
+            el.dataset.codigo = data;
+            showToast('Novo código gerado!');
+        }
+
+        // Sair da família (desvincula o perfil; os dados continuam com a família).
+        async function sairDaFamilia() {
+            if (!confirm('Tem certeza que deseja sair da família? Você deixará de ver as crianças e os dados dela.')) return;
+            const { error } = await supabaseClient.rpc('kids_leave_family');
+            if (error) {
+                showToast(mensagemErroConvite(error), 'error');
+                return;
+            }
+            showToast('Você saiu da família.');
+            setTimeout(() => window.location.reload(), 800);
         }
 
         // ==================== UTILITÁRIO DE FORMATAÇÃO DE DATA ====================
@@ -856,6 +1067,7 @@
                 document.getElementById('addressDisplay').innerText = family.address || 'Endereço não informado';
                 document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${escapeHtml(family.cell_group || 'não informada')}`;
                 window.currentFamilyData = family;
+                souDonoFamilia = !!(currentUser && family.owner_id && family.owner_id === currentUser.id);
                 sincronizarIndicadoresCadastro(family);
             }
         }
