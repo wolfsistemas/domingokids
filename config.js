@@ -11,7 +11,12 @@ const VAPID_PUBLIC_KEY = 'BJ4YbI1bdeeM_GzNCpS-nq1lA1eeGEdahIn09pmL4qchZ92AIsURlL
 // Instância global do cliente Supabase (será usada em todos os lugares)
 //const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-// Upload de imagens: usa a Edge Function `imgbb-upload` (chave mantida no servidor).
+// Upload de imagens: qual backend usar.
+//   'supabase' -> Supabase Storage (bucket abaixo), com compressao no cliente.
+//   'imgbb'    -> Edge Function imgbb-upload (fallback/rollback).
+// Para voltar tudo ao imgBB: mude para 'imgbb' e rode o revert da migracao.
+const PHOTO_BACKEND = 'supabase';
+const PHOTO_BUCKET = 'kids-photos';
 
 // Encerra a sessão e volta para a tela de login.
 // Espelha o sistema de referência: quem usa biometria NÃO tem a sessão do

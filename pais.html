@@ -921,10 +921,8 @@
             const photoFile = document.getElementById('editFatherPhoto').files[0];
             let photoUrl = null;
             if (photoFile) {
-                const formData = new FormData();
-                formData.append('image', photoFile);
                 try {
-                    photoUrl = await uploadImagem(formData);
+                    photoUrl = await uploadImagem(photoFile, 'pai');
                 } catch (err) {
                     alert('Erro ao enviar foto do pai');
                     return;
@@ -968,10 +966,8 @@
             const photoFile = document.getElementById('editMotherPhoto').files[0];
             let photoUrl = null;
             if (photoFile) {
-                const formData = new FormData();
-                formData.append('image', photoFile);
                 try {
-                    photoUrl = await uploadImagem(formData);
+                    photoUrl = await uploadImagem(photoFile, 'mae');
                 } catch (err) {
                     alert('Erro ao enviar foto da mãe');
                     return;
@@ -1226,10 +1222,8 @@
                 if (!name) { alert('O nome da criança é obrigatório.'); return; }
                 let photoUrl = null;
                 if (photoFile) {
-                    const formData = new FormData();
-                    formData.append('image', photoFile);
                     try {
-                        photoUrl = await uploadImagem(formData);
+                        photoUrl = await uploadImagem(photoFile, 'crianca', childId || null);
                     } catch (err) { alert('Erro ao enviar a foto.'); return; }
                 }
                 const childData = { name, birth_date: birthDate || null, allergies: allergies || null, special_needs: specialNeeds || null, family_id: currentFamilyId, is_active: true };
@@ -1317,20 +1311,83 @@
             return '';
         }
 
-        async function uploadImagem(formData) {
-            const { data } = await supabaseClient.auth.getSession();
-            const token = data && data.session ? data.session.access_token : '';
-            const response = await fetch(FUNCTIONS_URL + '/imgbb-upload', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'apikey': SB_KEY
-                },
-                body: formData
-            });
-            const result = await response.json().catch(function () { return {}; });
-            if (!response.ok || !result.url) throw new Error('Falha no upload');
-            return result.url;
+        // Comprime a imagem no cliente: redimensiona (maior lado <= 720) e
+        // converte para WebP, respeitando a orientacao EXIF.
+        async function comprimirImagem(file, maxLado, qualidade) {
+            maxLado = maxLado || 720;
+            qualidade = qualidade || 0.8;
+            try {
+                let fonte;
+                if (window.createImageBitmap) {
+                    fonte = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                } else {
+                    fonte = await new Promise(function (resolve, reject) {
+                        const img = new Image();
+                        img.onload = function () { resolve(img); };
+                        img.onerror = reject;
+                        img.src = URL.createObjectURL(file);
+                    });
+                }
+                const largura = fonte.width, altura = fonte.height;
+                const escala = Math.min(1, maxLado / Math.max(largura, altura));
+                const w = Math.max(1, Math.round(largura * escala));
+                const h = Math.max(1, Math.round(altura * escala));
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(fonte, 0, 0, w, h);
+                if (fonte.close) fonte.close();
+                let blob = await new Promise(function (resolve) {
+                    canvas.toBlob(resolve, 'image/webp', qualidade);
+                });
+                if (!blob || blob.type !== 'image/webp') {
+                    blob = await new Promise(function (resolve) {
+                        canvas.toBlob(resolve, 'image/jpeg', qualidade);
+                    });
+                }
+                if (!blob) return { blob: file, ext: (file.type.split('/')[1] || 'jpg') };
+                return { blob: blob, ext: blob.type === 'image/webp' ? 'webp' : 'jpg' };
+            } catch (e) {
+                console.warn('Compressao falhou, usando arquivo original:', e);
+                return { blob: file, ext: (file.type.split('/')[1] || 'jpg') };
+            }
+        }
+
+        // Sobe a imagem tratada. Backend configuravel em config.js.
+        //   kind: 'pai' | 'mae' | 'crianca'
+        async function uploadImagem(file, kind, childId) {
+            // Fallback: imgBB (Edge Function).
+            if (typeof PHOTO_BACKEND !== 'undefined' && PHOTO_BACKEND === 'imgbb') {
+                const formData = new FormData();
+                formData.append('image', file);
+                const { data } = await supabaseClient.auth.getSession();
+                const token = data && data.session ? data.session.access_token : '';
+                const response = await fetch(FUNCTIONS_URL + '/imgbb-upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'apikey': SB_KEY },
+                    body: formData
+                });
+                const result = await response.json().catch(function () { return {}; });
+                if (!response.ok || !result.url) throw new Error('Falha no upload');
+                return result.url;
+            }
+
+            // Padrao: Supabase Storage.
+            if (!currentFamilyId) throw new Error('Familia nao carregada');
+            const tratada = await comprimirImagem(file);
+            const ident = (kind === 'crianca')
+                ? (childId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now())))
+                : kind;
+            const path = currentFamilyId + '/' + kind + '-' + ident + '-v' + Date.now() + '.' + tratada.ext;
+            const contentType = tratada.blob.type || (tratada.ext === 'webp' ? 'image/webp' : 'image/jpeg');
+            const { error } = await supabaseClient.storage
+                .from(PHOTO_BUCKET)
+                .upload(path, tratada.blob, { contentType: contentType, upsert: false, cacheControl: '31536000' });
+            if (error) throw new Error('Falha no upload: ' + error.message);
+            const { data: pub } = supabaseClient.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+            return pub.publicUrl;
         }
 
 
