@@ -1474,38 +1474,42 @@
                 document.getElementById('scanResult').innerHTML = `✅ Check‑in: ${escapeHtml(childName)} (${escapeHtml(roomDisplay)})`;
                 showToast(`Check‑in: ${childName} - Sala ${roomDisplay}`, 'success');
 
-                // Pós-check-in (melhor esforço): lista, push e impressão não
-                // podem travar nem reabrir o modal.
-                try {
-                    await loadPresentList();
-                    let idade = '';
-                    if (birthDate) {
-                        const idadeNum = calcularIdade(birthDate);
-                        idade = `${idadeNum} anos`;
-                    }
-                    await enviarPush({
-                        event: 'checkin',
-                        checkinId: newCheckin.id,
+                // Pós-check-in (melhor esforço): a impressão é a prioridade e
+                // NÃO pode esperar a rede. Lista e push rodam em segundo plano.
+                let idade = '';
+                if (birthDate) {
+                    const idadeNum = calcularIdade(birthDate);
+                    idade = `${idadeNum} anos`;
+                }
+                const isVisitor = !!childData.is_visitor;
+                const fatherPhone = isVisitor ? (childData.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
+                const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
+
+                // Lista e pushes disparados sem await: não atrasam a impressão.
+                loadPresentList().catch(function (e) { console.error('Lista de presentes:', e); });
+                enviarPush({
+                    event: 'checkin',
+                    checkinId: newCheckin.id,
+                    childId: childId,
+                    childName: childName,
+                    room: room
+                }).catch(function () {});
+                if (estaNaJanelaAniversario(birthDate)) {
+                    enviarPush({
+                        event: 'aniversario_checkin',
                         childId: childId,
-                        childName: childName,
-                        room: room
-                    });
-                    if (estaNaJanelaAniversario(birthDate)) {
-                        await enviarPush({
-                            event: 'aniversario_checkin',
-                            childId: childId,
-                            childName: childName
-                        });
-                    }
-                    const isVisitor = !!childData.is_visitor;
-                    const fatherPhone = isVisitor ? (childData.visitor_responsible_phone || 'Não informado') : (family.father_phone || 'Não informado');
-                    const motherPhone = isVisitor ? '' : (family.mother_phone || 'Não informado');
+                        childName: childName
+                    }).catch(function () {});
+                }
+
+                // Impressão imediata.
+                try {
                     await printLabel(tokenValue, childName, allergies, idade, fatherPhone, motherPhone, newCheckin.id, {
                         isVisitor,
                         respName: childData.visitor_responsible_name || ''
                     });
                 } catch (e) {
-                    console.error('Pós check-in (não crítico):', e);
+                    console.error('Impressão (não crítica):', e);
                 }
             } catch (e) {
                 console.error('Erro no check-in:', e);
@@ -1898,11 +1902,12 @@
                 .update({ checked_out_at: new Date().toISOString() })
                 .eq('id', checkinId);
             if (error) { showToast('Erro no check-out: ' + error.message, 'error'); return; }
-            const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).maybeSingle();
-            if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
-            await enviarPush({ event: 'checkout', checkinId: checkinId });
-            await loadPresentList();
+            // Fecha o modal de detalhes imediatamente e segue em segundo plano.
+            closeChildDetailsModal();
             showToast('Check‑out manual realizado', 'success');
+            enviarPush({ event: 'checkout', checkinId: checkinId }).catch(function () {});
+            loadPresentList().catch(function (e) { console.error('Lista de presentes:', e); });
+            expirarTokenDoCheckin(checkinId);
         }
 
         // ========== ROOM MODAL ==========
@@ -2154,18 +2159,33 @@
             if (!pendingCheckoutData) return;
             const { checkinId } = pendingCheckoutData;
             pendingCheckoutData = null;
+            // Fecha o modal imediatamente: a tela nunca fica presa esperando rede/push.
+            closeCheckoutConfirmModal();
             const { error } = await supabaseClient
                 .from('kids_check_ins')
                 .update({ checked_out_at: new Date().toISOString() })
                 .eq('id', checkinId);
             if (error) { showToast('Erro no check-out: ' + error.message, 'error'); return; }
-            const { data: token } = await supabaseClient.from('kids_temporary_tokens').select('id').eq('checkin_id', checkinId).maybeSingle();
-            if (token) await supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
-            await enviarPush({ event: 'checkout', checkinId: checkinId });
             showToast('Check‑out realizado com sucesso!', 'success');
             document.getElementById('scanResult').innerHTML = `✅ Check‑out confirmado!`;
-            closeCheckoutConfirmModal();
-            await loadPresentList();
+            // Push, lista e expiração do token em segundo plano (não travam a tela).
+            enviarPush({ event: 'checkout', checkinId: checkinId }).catch(function () {});
+            loadPresentList().catch(function (e) { console.error('Lista de presentes:', e); });
+            expirarTokenDoCheckin(checkinId);
+        }
+
+        // Expira em segundo plano o token ligado a um check-in (usado no check-out).
+        function expirarTokenDoCheckin(checkinId) {
+            supabaseClient
+                .from('kids_temporary_tokens')
+                .select('id')
+                .eq('checkin_id', checkinId)
+                .maybeSingle()
+                .then(function (res) {
+                    const token = res && res.data;
+                    if (token) return supabaseClient.from('kids_temporary_tokens').update({ expires_at: new Date().toISOString() }).eq('id', token.id);
+                })
+                .catch(function () {});
         }
 
 

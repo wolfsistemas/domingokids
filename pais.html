@@ -82,6 +82,7 @@
             gap: 0.5rem;
         }
         .btn-header {
+            position: relative;
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
@@ -94,6 +95,29 @@
         }
         .btn-header:hover {
             background: rgba(255,255,255,0.3);
+        }
+
+        /* Indicador de cadastro incompleto (nome/telefone) */
+        .pos-rel { position: relative; }
+        .dot-pendente {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(239,68,68,0.6);
+            display: inline-block;
+            z-index: 2;
+            pointer-events: auto;
+        }
+        .dot-pendente--inline {
+            position: static;
+            margin-left: 6px;
+            vertical-align: middle;
+            border-color: #ffffff;
         }
 
         .container {
@@ -501,7 +525,7 @@
     <div class="header">
         <div class="header-buttons">
             <!--<button class="btn-header" onclick="openHistoryModal()">📜 Histórico</button>-->
-            <button class="btn-header" onclick="openConfigModal()">⚙️</button>
+            <button class="btn-header" id="configBtn" onclick="openConfigModal()">⚙️</button>
             <button class="btn-header" onclick="logout()">Sair</button>
         </div>
         <h1>👨‍👩‍👧 Domingo Kids</h1>
@@ -810,7 +834,40 @@
                 document.getElementById('addressDisplay').innerText = family.address || 'Endereço não informado';
                 document.getElementById('cellGroupDisplay').innerHTML = `Célula: ${escapeHtml(family.cell_group || 'não informada')}`;
                 window.currentFamilyData = family;
+                sincronizarIndicadoresCadastro(family);
             }
+        }
+
+        // ==================== INDICADOR DE CADASTRO INCOMPLETO ====================
+        // Responsáveis com nome/telefone faltando (usado no ponto vermelho).
+        function responsaveisIncompletos(family) {
+            const f = family || {};
+            const faltando = [];
+            if (!f.father_name || !f.father_phone) faltando.push('pai');
+            if (!f.mother_name || !f.mother_phone) faltando.push('mãe');
+            return faltando;
+        }
+
+        // Adiciona/remove o ponto vermelho em um elemento (inline quando solicitado).
+        function aplicarDotPendente(id, ativo, titulo, inline) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const anterior = el.querySelector('.dot-pendente');
+            if (anterior) anterior.remove();
+            if (!ativo) return;
+            const dot = document.createElement('span');
+            dot.className = 'dot-pendente' + (inline ? ' dot-pendente--inline' : '');
+            dot.title = titulo || 'Cadastro incompleto';
+            if (!inline) el.classList.add('pos-rel');
+            el.appendChild(dot);
+        }
+
+        function sincronizarIndicadoresCadastro(family) {
+            const faltando = responsaveisIncompletos(family);
+            const titulo = 'Cadastro incompleto: ' + faltando.join(', ');
+            aplicarDotPendente('fatherNameDisplay', faltando.includes('pai'), 'Pai: informe nome e telefone', true);
+            aplicarDotPendente('motherNameDisplay', faltando.includes('mãe'), 'Mãe: informe nome e telefone', true);
+            aplicarDotPendente('configBtn', faltando.length > 0, titulo, false);
         }
 
         // ==================== EDIÇÃO DO NOME DA FAMÍLIA ====================
