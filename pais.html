@@ -872,6 +872,8 @@
             await loadChildren();
             await loadLastRegister();
             await loadFamilyData();
+            // Registra o push deste aparelho para receber as notificacoes das criancas.
+            registrarPush();
         }
 
         // ==================== COMPARTILHAMENTO DA FAMÍLIA ====================
@@ -913,6 +915,11 @@
                 await loadChildren();
                 await loadLastRegister();
                 await loadFamilyData();
+                // Registra o push deste aparelho para o novo membro receber as
+                // notificacoes das criancas da familia (aproveita o clique como gesto).
+                registrarPush().then((ok) => {
+                    if (!ok) showToast('Ative as notificações para receber os avisos das crianças.', 'info');
+                });
             } catch (err) {
                 showToast(mensagemErroConvite(err), 'error');
                 if (btn) { btn.disabled = false; btn.innerText = 'Entrar'; }
